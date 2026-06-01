@@ -1,24 +1,36 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+
+## 软件源与镜像
+
+国内网络环境下，任何软件包的安装和下载应优先使用国内加速源和镜像：
+- **Maven**：阿里云公共仓库（`https://maven.aliyun.com/repository/public`）或华为云镜像
+- **NPM/Yarn**：淘宝 NPM 镜像（`https://registry.npmmirror.com`）
+- **Docker**：阿里云容器镜像服务、腾讯云镜像、中科大镜像
+- **PyPI**：阿里云（`https://mirrors.aliyun.com/pypi/simple`）、清华源、华为源
+- **Git 仓库**：gitee mirror 或配置 git proxy
+- **系统包管理器**（brew/apt/yum）：中科大、清华、阿里云等镜像站
+
+执行安装和下载操作前，先检查当前源配置，确保使用可用的高质量国内镜像，避免因网络问题导致超时或失败。
 
 ## Build & Run
 
 ```bash
 # 全量编译（跳过测试）
-./gradlew build -x test
+mvn -B package -Dmaven.test.skip=true
 
 # 编译单个模块
-./gradlew :modules:yudao-module-system-server:compileJava
+mvn compile -pl yudao-module-system/yudao-module-system-server -am
 
 # 运行单元测试
-./gradlew test
+mvn test
 
 # 运行单个测试类
-./gradlew :modules:yudao-module-system-server:test --tests "cn.iocoder.yudao.module.system.service.tenant.TenantPackageServiceImplTest"
+mvn test -pl yudao-module-system/yudao-module-system-server -Dtest=TenantPackageServiceImplTest
 
 # 运行单个测试方法
-./gradlew :modules:yudao-module-system-server:test --tests "cn.iocoder.yudao.module.system.service.tenant.TenantPackageServiceImplTest.testCreateTenantPackage_success"
+mvn test -pl yudao-module-system/yudao-module-system-server -Dtest=TenantPackageServiceImplTest#testCreateTenantPackage_success
 ```
 
 **本地启动**（单体模式）：运行 `YudaoServerApplication`，激活 `local` profile。需要本地 MySQL（`127.0.0.1:3306/ruoyi-vue-pro`）和 Redis（`127.0.0.1:6379`）。端口 48080。
@@ -38,7 +50,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 模块依赖关系
 
 ```
-modules/（所有模块平铺在 modules/ 下）
+yudao-dependencies (BOM，统一管理所有依赖版本)
+       │
+yudao-framework（16 个自定义 Spring Boot Starter）
   ├── yudao-common（基础 POJO、枚举、工具类）
   ├── yudao-spring-boot-starter-mybatis（MyBatis-Plus 封装）
   ├── yudao-spring-boot-starter-security（认证鉴权）
@@ -48,17 +62,17 @@ modules/（所有模块平铺在 modules/ 下）
   ├── yudao-spring-boot-starter-biz-tenant（SaaS 多租户）
   └── ...其他 starter
        │
-  ├── yudao-module-*-api（Feign 接口 + DTO，供跨模块调用）
-  ├── yudao-module-*-server（业务实现，依赖 api + framework starters）
-  │
-  ├── yudao-server（单体壳，聚合所有 module-server）
-  └── yudao-gateway（Spring Cloud Gateway，路由 + 灰度负载均衡）
+yudao-module-*-api（Feign 接口 + DTO，供跨模块调用）
+yudao-module-*-server（业务实现，依赖 api + framework starters）
+       │
+yudao-server（单体壳，聚合所有 module-server）
+yudao-gateway（Spring Cloud Gateway，路由 + 灰度负载均衡）
 ```
 
 ### 每个业务模块的分层结构
 
 ```
-modules/yudao-module-<name>-server/
+yudao-module-<name>/yudao-module-<name>-server/
   src/main/java/cn/iocoder/yudao/module/<name>/
     controller/
       admin/          后台管理 API（@PreAuthorize 权限控制）
@@ -130,7 +144,7 @@ lombok.equalsandhashcode.callsuper = CALL
 
 ## Testing
 
-测试基类在 `modules/yudao-spring-boot-starter-test/`：
+测试基类在 `yudao-framework/yudao-spring-boot-starter-test/`：
 
 | 基类 | 场景 |
 |------|------|
@@ -147,7 +161,7 @@ lombok.equalsandhashcode.callsuper = CALL
 
 ## Tech Stack
 
-- **Java 25** + **Gradle 9.5.1** + **Spring Boot 3.5.9** + **Spring Cloud 2025.0.1** + **Spring Cloud Alibaba 2025.0.0.0**
+- **Java 25** + **Spring Boot 3.5.9** + **Spring Cloud 2025.0.1** + **Spring Cloud Alibaba 2025.0.0.0**
 - **MyBatis-Plus** + MyBatis-Plus Join（yulichang）
 - **Druid** 连接池 + dynamic-datasource（多数据源）
 - **Redisson** 4.4.0
@@ -158,4 +172,4 @@ lombok.equalsandhashcode.callsuper = CALL
 
 ## CI
 
-GitHub Actions（`.github/workflows/gradle.yml`）：push 到 master 触发，Java 25（Temurin），`./gradlew build -x test`。
+GitHub Actions（`.github/workflows/maven.yml`）：push 到 master 触发，Java 25（Temurin），`mvn -B package -Dmaven.test.skip=true`。
