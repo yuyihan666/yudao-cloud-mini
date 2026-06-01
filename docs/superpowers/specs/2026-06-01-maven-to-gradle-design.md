@@ -6,10 +6,13 @@
 
 ## 方案选型
 
-**选定：buildSrc Convention Plugins + Version Catalog**
+**选定：build-logic Composite Build Convention Plugins + Version Catalog**
+
+基于 Gradle 官方长期最佳实践（[Structuring Multi-Project Builds](https://docs.gradle.org/current/userguide/intro_multi_project_builds.html)）和 Spring Boot 3.5 官方文档（[Managing Dependencies](https://docs.spring.io/spring-boot/3.5/gradle-plugin/managing-dependencies.html)）核验。
 
 - Version Catalog (`libs.versions.toml`) 替代 yudao-dependencies BOM
-- buildSrc convention plugins 封装公共构建逻辑（Java 编译、注解处理器、Spring Boot 打包）
+- build-logic composite build 中的 convention plugins 封装公共构建逻辑（Gradle 官方长期推荐，优于 buildSrc）
+- Spring BOM 通过 `platform()` 引入（Spring Boot 官方认可的两种方式之一，构建更快）
 - 每个模块的 build.gradle 极简，只声明依赖差异
 
 ## 1. 目录映射
@@ -45,7 +48,13 @@ pluginManagement {
     }
 }
 
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.9.0'
+}
+
 rootProject.name = 'yudao-cloud-mini'
+
+includeBuild 'build-logic'
 
 include 'modules:yudao-common'
 include 'modules:yudao-spring-boot-starter-env'
@@ -182,23 +191,32 @@ spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 
 ### 设计决策
 
-- Spring BOM 通过 `platform()` 引入：在根 build.gradle 中统一 `api(platform(libs.spring.boot.bom))` 等，子模块直接用 `implementation("org.springframework.boot:spring-boot-starter-web")` 不带版本号
+- Spring BOM 通过 `platform()` 引入：在 yudao-java convention plugin 中统一 `api(platform(libs.spring.boot.bom))` 等。Spring Boot 官方认可此方式，且构建速度比 `io.spring.dependency-management` 插件更快（[参考](https://docs.spring.io/spring-boot/3.5/gradle-plugin/managing-dependencies.html)）
 - Maven `${revision}` 不再需要：Gradle 原生支持项目间依赖不带版本
 - 排除和可选依赖在模块 build.gradle 中用 Gradle 原生语法处理
 
-## 3. buildSrc Convention Plugins
+## 3. build-logic Convention Plugins
+
+使用 Composite Build（`build-logic/`）替代 buildSrc，这是 Gradle 官方长期推荐的共享构建逻辑方式（[参考](https://docs.gradle.org/current/userguide/sharing_build_logic_between_subprojects.html)）。优势：build-logic 的改动不会使整个项目的构建缓存失效，只影响使用了该插件的模块。
 
 ### 目录结构
 
 ```
-buildSrc/
-├── build.gradle
+build-logic/
+├── settings.gradle              // composite build 自身配置
+├── build.gradle                 // 声明 groovy-gradle-plugin + 依赖
 └── src/main/groovy/
-    ├── yudao-java.gradle        // Java 编译 + 注解处理器
+    ├── yudao-java.gradle        // Java 编译 + 注解处理器 + BOM platform
     └── yudao-spring-app.gradle  // Spring Boot 应用打包
 ```
 
-### 3.1 buildSrc/build.gradle
+### 3.1 build-logic/settings.gradle
+
+```groovy
+rootProject.name = 'yudao-build-logic'
+```
+
+### 3.2 build-logic/build.gradle
 
 ```groovy
 plugins {
@@ -207,14 +225,15 @@ plugins {
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
     maven { url 'https://mirrors.huaweicloud.com/repository/maven/' }
     maven { url 'https://maven.aliyun.com/repository/public' }
 }
 ```
 
-### 3.2 yudao-java.gradle
+### 3.3 yudao-java.gradle
 
-所有 Java 模块通用。封装：Java 版本、编码、Lombok + MapStruct 注解处理器、`-parameters` 编译参数。
+所有 Java 模块通用。封装：Java 版本、编码、BOM platform、Lombok + MapStruct 注解处理器、`-parameters` 编译参数。
 
 ```groovy
 plugins {
@@ -233,6 +252,12 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 dependencies {
+    // Spring BOM — 所有模块统一版本管理（等价于 Maven BOM import）
+    api(platform(libs.spring.boot.bom))
+    api(platform(libs.spring.cloud.bom))
+    api(platform(libs.spring.cloud.alibaba.bom))
+
+    // 注解处理器（所有模块共用）
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
@@ -243,7 +268,7 @@ dependencies {
 }
 ```
 
-### 3.3 yudao-spring-app.gradle
+### 3.4 yudao-spring-app.gradle
 
 Spring Boot 可执行应用。用于 yudao-server、yudao-gateway、*-server。
 
@@ -268,13 +293,9 @@ jar {
 }
 ```
 
-### 3.4 根 build.gradle
+### 3.5 根 build.gradle
 
 ```groovy
-plugins {
-    id 'java-library' apply false
-}
-
 allprojects {
     group = 'cn.iocoder.cloud'
     version = '2026.05-SNAPSHOT'
@@ -285,15 +306,9 @@ allprojects {
         maven { url 'https://maven.aliyun.com/repository/public' }
     }
 }
-
-subprojects {
-    dependencies {
-        api(platform(libs.spring.boot.bom))
-        api(platform(libs.spring.cloud.bom))
-        api(platform(libs.spring.cloud.alibaba.bom))
-    }
-}
 ```
+
+注意：不再使用 `subprojects {}` 块。BOM platform 和注解处理器统一在 `yudao-java` convention plugin 中声明，各模块通过 `plugins { id 'yudao-java' }` 自动获得。
 
 ### 插件使用矩阵
 
@@ -478,7 +493,7 @@ dependencies {
 
 - 创建 settings.gradle + 根 build.gradle
 - 创建 gradle/libs.versions.toml
-- 创建 buildSrc/ + 两个 convention plugins
+- 创建 build-logic/ + settings.gradle + build.gradle + 两个 convention plugins
 - 创建 modules/ 目录结构（空壳 + 空 build.gradle）
 - `gradle tasks` 验证骨架能加载
 
@@ -521,7 +536,7 @@ dependencies {
 | Maven `<exclusions>` | Gradle `exclude group:, module:` 块 |
 | lombok.config | 保持原样，Lombok 自动读取 |
 | 双部署模式（单体/微服务） | 与 Maven 同理，单体模式 exclude OpenFeign |
-| Spring Cloud Alibaba BOM | 在根 build.gradle 中用 `platform()` 引入 |
+| Spring Cloud Alibaba BOM | 在 yudao-java convention plugin 中通过 `platform()` 引入 |
 | 多数据库驱动 | 与 Maven 相同，runtimeOnly 放 MySQL，其余 compileOnly |
 
 ## 7. 构建命令对照
