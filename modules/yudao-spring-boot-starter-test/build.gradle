@@ -9,6 +9,7 @@ dependencies {
     api libs.mockito
     api 'org.springframework.boot:spring-boot-starter-test'
     api 'org.springframework.boot:spring-boot-testcontainers'
+    api 'org.springframework.boot:spring-boot-starter-web'
 
     api(enforcedPlatform(libs.testcontainers.bom))
     api libs.testcontainers.mysql
