@@ -47,22 +47,42 @@ configurations.configureEach {
 }
 
 // ========== Agent-friendly test configuration ==========
-tasks.withType(Test).configureEach {
+tasks.withType(Test).configureEach { testTask ->
     testLogging {
-        events "passed", "skipped", "failed"
-        showExceptions true
-        showCauses true
-        showStackTraces true
-        exceptionFormat "full"
+        events = [
+                org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
+                org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
+                org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
+        ] as Set
+        showExceptions = true
+        showCauses = true
+        showStackTraces = true
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
 
-    afterSuite { desc, result ->
-        if (!desc.parent) {
-            logger.lifecycle("Test result: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} passed, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped)")
-            logger.lifecycle("HTML report: ${reports.html.outputLocation.get().asFile}")
-            logger.lifecycle("XML results: ${reports.junitXml.outputLocation.get().asFile}")
+    addTestListener(new org.gradle.api.tasks.testing.TestListener() {
+        @Override
+        void beforeSuite(org.gradle.api.tasks.testing.TestDescriptor suite) {
         }
-    }
+
+        @Override
+        void afterSuite(org.gradle.api.tasks.testing.TestDescriptor desc, org.gradle.api.tasks.testing.TestResult result) {
+            if (desc.parent != null) {
+                return
+            }
+            logger.lifecycle("Test result: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} passed, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped)")
+            logger.lifecycle("HTML report: ${testTask.reports.html.outputLocation.get().asFile}")
+            logger.lifecycle("XML results: ${testTask.reports.junitXml.outputLocation.get().asFile}")
+        }
+
+        @Override
+        void beforeTest(org.gradle.api.tasks.testing.TestDescriptor testDescriptor) {
+        }
+
+        @Override
+        void afterTest(org.gradle.api.tasks.testing.TestDescriptor testDescriptor, org.gradle.api.tasks.testing.TestResult result) {
+        }
+    })
 }
 
 tasks.register('agentQuick') {
@@ -83,11 +103,12 @@ tasks.register('agentDb', Test) {
     description = 'AI Agent DB gate: run MySQL Testcontainers tests.'
 
     useJUnitPlatform {
-        includeTags 'db', 'integration'
+        includeTags 'db'
         excludeTags 'api'
     }
 
     shouldRunAfter tasks.named('test')
+    mustRunAfter tasks.named('agentQuick')
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
 }
@@ -100,7 +121,7 @@ tasks.register('agentApi', Test) {
         includeTags 'api'
     }
 
-    shouldRunAfter tasks.named('agentDb')
+    mustRunAfter tasks.named('agentDb')
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
 }
