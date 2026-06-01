@@ -3,8 +3,8 @@ allprojects {
     version = '2026.05-SNAPSHOT'
 
     repositories {
-        mavenCentral()
         maven { url = 'https://mirrors.huaweicloud.com/repository/maven/' }
         maven { url = 'https://maven.aliyun.com/repository/public' }
+        mavenCentral()
     }
 }

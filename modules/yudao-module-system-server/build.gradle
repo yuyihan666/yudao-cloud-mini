@@ -29,7 +29,7 @@ dependencies {
     }
     implementation libs.weixin.mp
     implementation libs.weixin.miniapp
-    implementation 'com.anji-plus:captcha-spring-boot-starter:1.4.0'
+    implementation libs.captcha
     implementation libs.hutool.extra
     implementation libs.commons.lang3
     implementation 'org.springframework.boot:spring-boot-starter-mail'

@@ -7,6 +7,6 @@ dependencies {
     api 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
     api 'org.springframework.cloud:spring-cloud-starter-openfeign'
     api 'io.github.openfeign:feign-okhttp'
-    implementation 'org.apache.httpcomponents:httpclient:4.5.14'
+    implementation libs.httpclient
     implementation 'jakarta.validation:jakarta.validation-api'
 }

@@ -3,12 +3,12 @@ plugins {
 }
 
 repositories {
-    mavenCentral()
-    gradlePluginPortal()
     maven { url = 'https://mirrors.huaweicloud.com/repository/maven/' }
     maven { url = 'https://maven.aliyun.com/repository/public' }
+    mavenCentral()
+    gradlePluginPortal()
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-gradle-plugin:3.5.14'
+    implementation "org.springframework.boot:spring-boot-gradle-plugin:${providers.gradleProperty('springBootVersion').getOrElse('3.5.14')}"
 }

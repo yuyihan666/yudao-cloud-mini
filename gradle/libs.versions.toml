@@ -31,16 +31,22 @@ jedis-mock = "1.1.12"
 mockito = "5.18.0"
 # 工具
 lombok = "1.18.46"
+lombok-mapstruct-binding = "0.2.0"
 mapstruct = "1.6.3"
+ttl = "2.14.5"
 hutool-5 = "5.8.44"
 hutool-6 = "6.0.0-M22"
 fastexcel = "1.3.0"
 guava = "33.6.0-jre"
 fastjson = "1.2.83"
-commons-lang3 = "3.20.0"
+commons-lang = "3.20.0"
+commons-net = "3.13.0"
+jsch = "2.28.2"
 jsoup = "1.22.2"
 reflections = "0.10.2"
 # 三方云
+captcha = "1.4.0"
+httpclient = "4.5.14"
 justauth = "1.16.7"
 justauth-starter = "1.4.0"
 weixin-java = "4.8.2-20260501.180637"
@@ -72,6 +78,7 @@ mybatis-plus-generator = { module = "com.baomidou:mybatis-plus-generator", versi
 aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "awssdk" }
 dynamic-datasource = { module = "com.baomidou:dynamic-datasource-spring-boot3-starter", version.ref = "dynamic-datasource" }
 easy-trans-starter = { module = "com.fhs-opensource:easy-trans-spring-boot-starter", version.ref = "easy-trans" }
+easy-trans-anno = { module = "com.fhs-opensource:easy-trans-anno", version.ref = "easy-trans" }
 easy-trans-mybatis = { module = "com.fhs-opensource:easy-trans-mybatis-plus-extend", version.ref = "easy-trans" }
 redisson = { module = "org.redisson:redisson-spring-boot-starter", version.ref = "redisson" }
 # MQ
@@ -82,13 +89,17 @@ xxl-job = { module = "com.xuxueli:xxl-job-core", version.ref = "xxl-job" }
 lock4j = { module = "com.baomidou:lock4j-redisson-spring-boot-starter", version.ref = "lock4j" }
 # 监控
 skywalking-trace = { module = "org.apache.skywalking:apm-toolkit-trace", version.ref = "skywalking" }
+skywalking-logback = { module = "org.apache.skywalking:apm-toolkit-logback-1.x", version.ref = "skywalking" }
+skywalking-opentracing = { module = "org.apache.skywalking:apm-toolkit-opentracing", version.ref = "skywalking" }
 spring-boot-admin-server = { module = "de.codecentric:spring-boot-admin-starter-server", version.ref = "spring-boot-admin" }
 spring-boot-admin-client = { module = "de.codecentric:spring-boot-admin-starter-client", version.ref = "spring-boot-admin" }
+opentracing-util = { module = "io.opentracing:opentracing-util", version.ref = "opentracing" }
 # Test
 jedis-mock = { module = "com.github.fppt:jedis-mock", version.ref = "jedis-mock" }
 podam = { module = "uk.co.jemos.podam:podam", version.ref = "podam" }
 # 工具
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+lombok-mapstruct-binding = { module = "org.projectlombok:lombok-mapstruct-binding", version.ref = "lombok-mapstruct-binding" }
 mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
 mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
 hutool-all = { module = "cn.hutool:hutool-all", version.ref = "hutool-5" }
@@ -97,8 +108,13 @@ fastexcel = { module = "cn.idev.excel:fastexcel", version.ref = "fastexcel" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 reflections = { module = "org.reflections:reflections", version.ref = "reflections" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
-commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
+commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang" }
+commons-net = { module = "commons-net:commons-net", version.ref = "commons-net" }
+jsch = { module = "com.github.mwiede:jsch", version.ref = "jsch" }
+httpclient = { module = "org.apache.httpcomponents:httpclient", version.ref = "httpclient" }
+ttl = { module = "com.alibaba:transmittable-thread-local", version.ref = "ttl" }
 # 三方云
+captcha = { module = "com.anji-plus:captcha-spring-boot-starter", version.ref = "captcha" }
 justauth = { module = "me.zhyd.oauth:JustAuth", version.ref = "justauth" }
 justauth-starter = { module = "com.xkcoding.justauth:justauth-spring-boot-starter", version.ref = "justauth-starter" }
 weixin-pay = { module = "com.github.binarywang:weixin-java-pay", version.ref = "weixin-java" }
