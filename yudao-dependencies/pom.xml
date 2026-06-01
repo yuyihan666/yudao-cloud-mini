@@ -50,7 +50,7 @@
         <!-- Test 测试相关 -->
         <podam.version>8.0.2.RELEASE</podam.version>
         <jedis-mock.version>1.1.12</jedis-mock.version>
-        <mockito-inline.version>5.2.0</mockito-inline.version>
+        <mockito.version>5.18.0</mockito.version>
         <!-- Bpm 工作流相关 -->
         <flowable.version>7.2.0</flowable.version>
         <!-- 工具类相关 -->
@@ -87,7 +87,7 @@
         <jimureport.version>2.3.4</jimureport.version>
         <jimubi.version>2.3.2</jimubi.version>
         <weixin-java.version>4.8.2-20260501.180637</weixin-java.version>
-        <bouncycastle.version>1.80</bouncycastle.version>
+        <bouncycastle.version>1.84</bouncycastle.version>
         <alipay-sdk-java.version>4.40.806.ALL</alipay-sdk-java.version>
     </properties>
 
@@ -435,8 +435,8 @@
 
             <dependency>
                 <groupId>org.mockito</groupId>
-                <artifactId>mockito-inline</artifactId>
-                <version>${mockito-inline.version}</version> <!-- 支持 Mockito 的 final 类与 static 方法的 mock -->
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
             </dependency>
 
             <dependency>

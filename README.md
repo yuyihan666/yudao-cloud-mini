@@ -1,6 +1,6 @@
 <p align="center">
- <img src="https://img.shields.io/badge/Spring%20Cloud-2024-blue.svg" alt="Coverage Status">
- <img src="https://img.shields.io/badge/Spring%20Boot-3.4.5-blue.svg" alt="Downloads">
+ <img src="https://img.shields.io/badge/Spring%20Cloud-2025-blue.svg" alt="Coverage Status">
+ <img src="https://img.shields.io/badge/Spring%20Boot-3.5-blue.svg" alt="Downloads">
  <img src="https://img.shields.io/badge/Vue-3.2-blue.svg" alt="Downloads">
  <img src="https://img.shields.io/github/license/YunaiV/yudao-cloud" alt="Downloads" />
 </p>
@@ -26,7 +26,7 @@
 
 ## 🐰 版本说明
 
-| 版本                                                                    | JDK 8 + Spring Boot 2.7                                                  | JDK 17/21 + Spring Boot 3.2                                                          |
+| 版本                                                                    | JDK 8 + Spring Boot 2.7                                                  | JDK 25 + Spring Boot 3.5                                                          |
 |-----------------------------------------------------------------------|--------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
 | 【完整版】[yudao-cloud](https://gitee.com/zhijiantianya/yudao-cloud)       | [`master`](https://gitee.com/zhijiantianya/yudao-cloud/tree/master/) 分支  | [`master-jdk17`](https://gitee.com/zhijiantianya/yudao-cloud/tree/master-jdk17/) 分支  |
 | 【精简版】[yudao-cloud-mini](https://gitee.com/yudaocode/yudao-cloud-mini) | [`master`](https://gitee.com/yudaocode/yudao-cloud-mini/tree/master/) 分支 | [`master-jdk17`](https://gitee.com/yudaocode/yudao-cloud-mini/tree/master-jdk17/) 分支 |
@@ -46,7 +46,7 @@
 
 ![架构图](/.image/common/yudao-cloud-architecture.png)
 
-* Java 后端：`master` 分支为 JDK 8 + Spring Boot 2.7，`master-jdk17` 分支为 JDK 17/21 + Spring Boot 3.2
+* Java 后端：`master` 分支为 JDK 8 + Spring Boot 2.7，`master-jdk25` 分支为 JDK 25 + Spring Boot 3.5
 * 管理后台的电脑端：Vue3 提供 [element-plus](https://gitee.com/yudaocode/yudao-ui-admin-vue3)、[vben(ant-design-vue)](https://gitee.com/yudaocode/yudao-ui-admin-vben) 两个版本，Vue2 提供 [element-ui](https://gitee.com/zhijiantianya/ruoyi-vue-pro/tree/master/yudao-ui-admin) 版本
 * 管理后台的移动端：采用 [uni-app](https://github.com/dcloudio/uni-app) 方案，一份代码多终端适配，同时支持 APP、小程序、H5！
 * 后端采用 Spring Cloud Alibaba 微服务架构，注册中心 + 配置中心 Nacos，定时任务 XXL-Job，服务保障 Sentinel，服务网关 Gateway，分布式事务 Seata
