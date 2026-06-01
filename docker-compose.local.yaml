@@ -1,0 +1,33 @@
+name: yudao-cloud-mini
+
+volumes:
+  mysql: { }
+
+services:
+  mysql:
+    image: mysql:8.0.33
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: ruoyi-vue-pro
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql:/var/lib/mysql/
+      - ./sql/mysql/ruoyi-vue-pro.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./sql/mysql/quartz.sql:/docker-entrypoint-initdb.d/02-quartz.sql:ro
+    command:
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --explicit_defaults_for_timestamp=true
+      --lower_case_table_names=1
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - "6379:6379"

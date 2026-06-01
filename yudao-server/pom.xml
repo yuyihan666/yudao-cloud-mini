@@ -165,13 +165,6 @@
         <dependency>
             <groupId>cn.iocoder.cloud</groupId>
             <artifactId>yudao-spring-boot-starter-rpc</artifactId>
-            <!-- 目的：yudao-server 单体启动，禁用 openfeign -->
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.cloud</groupId>
-                    <artifactId>spring-cloud-starter-openfeign</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
     </dependencies>
