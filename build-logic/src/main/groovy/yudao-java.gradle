@@ -42,3 +42,73 @@ configurations.configureEach {
         }
     }
 }
+
+// ========== Agent-friendly test configuration ==========
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        showExceptions true
+        showCauses true
+        showStackTraces true
+        exceptionFormat "full"
+    }
+
+    afterSuite { desc, result ->
+        if (!desc.parent) {
+            logger.lifecycle("Test result: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} passed, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped)")
+            logger.lifecycle("HTML report: ${reports.html.outputLocation.get().asFile}")
+            logger.lifecycle("XML results: ${reports.junitXml.outputLocation.get().asFile}")
+        }
+    }
+}
+
+tasks.register('agentQuick') {
+    group = 'verification'
+    description = 'AI Agent quick gate: compile and run non-integration tests without Docker.'
+
+    dependsOn tasks.named('test')
+}
+
+tasks.named('test', Test).configure {
+    useJUnitPlatform {
+        excludeTags 'db', 'api', 'integration'
+    }
+}
+
+tasks.register('agentDb', Test) {
+    group = 'verification'
+    description = 'AI Agent DB gate: run MySQL Testcontainers tests.'
+
+    useJUnitPlatform {
+        includeTags 'db', 'integration'
+        excludeTags 'api'
+    }
+
+    shouldRunAfter tasks.named('test')
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+}
+
+tasks.register('agentApi', Test) {
+    group = 'verification'
+    description = 'AI Agent API gate: run end-to-end API integration tests.'
+
+    useJUnitPlatform {
+        includeTags 'api'
+    }
+
+    shouldRunAfter tasks.named('agentDb')
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+}
+
+tasks.register('agentVerify') {
+    group = 'verification'
+    description = 'AI Agent final gate: quick tests, DB integration tests, then API integration tests.'
+
+    dependsOn tasks.named('agentQuick')
+    dependsOn tasks.named('agentDb')
+    dependsOn tasks.named('agentApi')
+}
