@@ -6,6 +6,10 @@ target/
 
 .flattened-pom.xml
 
+### Gradle ###
+.gradle/
+
+
 ### STS ###
 .apt_generated
 .classpath

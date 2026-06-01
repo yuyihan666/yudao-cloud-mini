@@ -1,0 +1,10 @@
+plugins {
+    id 'groovy-gradle-plugin'
+}
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+    maven { url = 'https://mirrors.huaweicloud.com/repository/maven/' }
+    maven { url = 'https://maven.aliyun.com/repository/public' }
+}

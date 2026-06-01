@@ -1,0 +1,28 @@
+plugins {
+    id 'java-library'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.debug = false
+    options.compilerArgs << '-parameters'
+}
+
+dependencies {
+    api(platform(libs.spring.boot.bom))
+    api(platform(libs.spring.cloud.bom))
+    api(platform(libs.spring.cloud.alibaba.bom))
+
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+    annotationProcessor 'org.mapstruct:mapstruct-processor'
+
+    compileOnly 'org.projectlombok:lombok'
+    implementation 'org.mapstruct:mapstruct'
+}

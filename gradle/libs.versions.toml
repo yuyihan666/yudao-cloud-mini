@@ -1,0 +1,99 @@
+[versions]
+revision = "2026.05-SNAPSHOT"
+java = "25"
+spring-boot = "3.5.14"
+spring-cloud = "2025.0.1"
+spring-cloud-alibaba = "2025.0.0.0"
+# Web
+springdoc = "2.8.17"
+knife4j = "4.5.0"
+# DB
+druid = "1.2.28"
+mybatis = "3.5.19"
+mybatis-plus = "3.5.16"
+mybatis-plus-join = "1.5.7"
+dynamic-datasource = "4.5.0"
+easy-trans = "3.0.6"
+redisson = "4.4.0"
+# MQ
+rocketmq-spring = "2.3.5"
+# Job
+xxl-job = "2.4.0"
+# 服务保障
+lock4j = "2.2.7"
+# 监控
+skywalking = "9.6.0"
+spring-boot-admin = "3.5.8"
+opentracing = "0.33.0"
+# Test
+podam = "8.0.2.RELEASE"
+jedis-mock = "1.1.12"
+mockito = "5.18.0"
+# 工具
+lombok = "1.18.46"
+mapstruct = "1.6.3"
+hutool-5 = "5.8.44"
+hutool-6 = "6.0.0-M22"
+fastexcel = "1.3.0"
+guava = "33.6.0-jre"
+fastjson = "1.2.83"
+commons-lang3 = "3.20.0"
+jsoup = "1.22.2"
+reflections = "0.10.2"
+# 三方云
+justauth = "1.16.7"
+justauth-starter = "1.4.0"
+weixin-java = "4.8.2-20260501.180637"
+bouncycastle = "1.84"
+alipay-sdk = "4.40.806.ALL"
+awssdk = "2.44.0"
+
+[libraries]
+# Spring BOM
+spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
+spring-cloud-bom = { module = "org.springframework.cloud:spring-cloud-dependencies", version.ref = "spring-cloud" }
+spring-cloud-alibaba-bom = { module = "com.alibaba.cloud:spring-cloud-alibaba-dependencies", version.ref = "spring-cloud-alibaba" }
+# Web
+springdoc-openapi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+knife4j-openapi = { module = "com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter", version.ref = "knife4j" }
+knife4j-gateway = { module = "com.github.xiaoymin:knife4j-gateway-spring-boot-starter", version.ref = "knife4j" }
+# DB
+druid = { module = "com.alibaba:druid-spring-boot-3-starter", version.ref = "druid" }
+mybatis-plus = { module = "com.baomidou:mybatis-plus-spring-boot3-starter", version.ref = "mybatis-plus" }
+mybatis-plus-jsqlparser = { module = "com.baomidou:mybatis-plus-jsqlparser", version.ref = "mybatis-plus" }
+mybatis-plus-join = { module = "com.github.yulichang:mybatis-plus-join-boot-starter", version.ref = "mybatis-plus-join" }
+dynamic-datasource = { module = "com.baomidou:dynamic-datasource-spring-boot3-starter", version.ref = "dynamic-datasource" }
+easy-trans-starter = { module = "com.fhs-opensource:easy-trans-spring-boot-starter", version.ref = "easy-trans" }
+easy-trans-mybatis = { module = "com.fhs-opensource:easy-trans-mybatis-plus-extend", version.ref = "easy-trans" }
+redisson = { module = "org.redisson:redisson-spring-boot-starter", version.ref = "redisson" }
+# MQ
+rocketmq-spring = { module = "org.apache.rocketmq:rocketmq-spring-boot-starter", version.ref = "rocketmq-spring" }
+# Job
+xxl-job = { module = "com.xuxueli:xxl-job-core", version.ref = "xxl-job" }
+# 服务保障
+lock4j = { module = "com.baomidou:lock4j-redisson-spring-boot-starter", version.ref = "lock4j" }
+# 监控
+skywalking-trace = { module = "org.apache.skywalking:apm-toolkit-trace", version.ref = "skywalking" }
+spring-boot-admin-server = { module = "de.codecentric:spring-boot-admin-starter-server", version.ref = "spring-boot-admin" }
+spring-boot-admin-client = { module = "de.codecentric:spring-boot-admin-starter-client", version.ref = "spring-boot-admin" }
+# Test
+jedis-mock = { module = "com.github.fppt:jedis-mock", version.ref = "jedis-mock" }
+podam = { module = "uk.co.jemos.podam:podam", version.ref = "podam" }
+# 工具
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
+hutool-all = { module = "cn.hutool:hutool-all", version.ref = "hutool-5" }
+hutool-extra = { module = "org.dromara.hutool:hutool-extra", version.ref = "hutool-6" }
+fastexcel = { module = "cn.idev.excel:fastexcel", version.ref = "fastexcel" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+reflections = { module = "org.reflections:reflections", version.ref = "reflections" }
+# 三方云
+justauth = { module = "me.zhyd.oauth:JustAuth", version.ref = "justauth" }
+justauth-starter = { module = "com.xkcoding.justauth:justauth-spring-boot-starter", version.ref = "justauth-starter" }
+weixin-pay = { module = "com.github.binarywang:weixin-java-pay", version.ref = "weixin-java" }
+weixin-mp = { module = "com.github.binarywang:wx-java-mp-spring-boot-starter", version.ref = "weixin-java" }
+weixin-miniapp = { module = "com.github.binarywang:wx-java-miniapp-spring-boot-starter", version.ref = "weixin-java" }
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }

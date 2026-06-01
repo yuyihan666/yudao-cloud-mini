@@ -1,0 +1,39 @@
+pluginManagement {
+    plugins {
+        id 'org.springframework.boot' version '3.5.14'
+    }
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url = 'https://mirrors.huaweicloud.com/repository/maven/' }
+        maven { url = 'https://maven.aliyun.com/repository/public' }
+    }
+}
+
+rootProject.name = 'yudao-cloud-mini'
+
+includeBuild 'build-logic'
+
+include 'modules:yudao-common'
+include 'modules:yudao-spring-boot-starter-env'
+include 'modules:yudao-spring-boot-starter-mybatis'
+include 'modules:yudao-spring-boot-starter-redis'
+include 'modules:yudao-spring-boot-starter-web'
+include 'modules:yudao-spring-boot-starter-security'
+include 'modules:yudao-spring-boot-starter-websocket'
+include 'modules:yudao-spring-boot-starter-monitor'
+include 'modules:yudao-spring-boot-starter-protection'
+include 'modules:yudao-spring-boot-starter-job'
+include 'modules:yudao-spring-boot-starter-mq'
+include 'modules:yudao-spring-boot-starter-rpc'
+include 'modules:yudao-spring-boot-starter-excel'
+include 'modules:yudao-spring-boot-starter-test'
+include 'modules:yudao-spring-boot-starter-biz-tenant'
+include 'modules:yudao-spring-boot-starter-biz-data-permission'
+include 'modules:yudao-spring-boot-starter-biz-ip'
+include 'modules:yudao-module-system-api'
+include 'modules:yudao-module-system-server'
+include 'modules:yudao-module-infra-api'
+include 'modules:yudao-module-infra-server'
+include 'modules:yudao-gateway'
+include 'modules:yudao-server'
