@@ -1,0 +1,16 @@
+plugins {
+    id 'yudao-java'
+}
+
+dependencies {
+    api project(':modules:yudao-common')
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    compileOnly 'org.springframework:spring-web'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api'
+    compileOnly 'io.opentracing:opentracing-util:0.33.0'
+    compileOnly libs.skywalking.trace
+    compileOnly 'org.apache.skywalking:apm-toolkit-logback-1.x:9.6.0'
+    compileOnly 'org.apache.skywalking:apm-toolkit-opentracing:9.6.0'
+    compileOnly 'io.micrometer:micrometer-registry-prometheus'
+    compileOnly libs.spring.boot.admin.client
+}

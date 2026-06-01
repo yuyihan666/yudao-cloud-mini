@@ -1,0 +1,28 @@
+plugins {
+    id 'yudao-java'
+}
+
+dependencies {
+    compileOnly 'org.springframework:spring-core'
+    compileOnly 'org.springframework:spring-expression'
+    compileOnly 'org.springframework:spring-aop'
+    compileOnly 'org.aspectj:aspectjweaver'
+    compileOnly 'org.springframework:spring-web'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api'
+    compileOnly libs.springdoc.openapi
+    compileOnly 'org.springframework.cloud:spring-cloud-openfeign-core'
+    compileOnly libs.guava
+    compileOnly 'com.fasterxml.jackson.core:jackson-databind'
+    compileOnly 'com.fasterxml.jackson.core:jackson-core'
+    compileOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    compileOnly 'org.slf4j:slf4j-api'
+    compileOnly 'jakarta.validation:jakarta.validation-api'
+
+    api libs.skywalking.trace
+    api libs.hutool.all
+    api 'com.alibaba:transmittable-thread-local:2.14.5'
+    api 'com.fhs-opensource:easy-trans-anno:3.0.6'
+    implementation libs.mapstruct
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}

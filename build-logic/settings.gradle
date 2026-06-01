@@ -1,1 +1,13 @@
+pluginManagement {
+    plugins {
+        id 'org.springframework.boot' version '3.5.14'
+    }
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url = 'https://mirrors.huaweicloud.com/repository/maven/' }
+        maven { url = 'https://maven.aliyun.com/repository/public' }
+    }
+}
+
 rootProject.name = 'yudao-build-logic'

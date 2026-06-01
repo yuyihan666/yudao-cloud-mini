@@ -1,0 +1,10 @@
+plugins {
+    id 'yudao-java'
+}
+
+dependencies {
+    compileOnly project(':modules:yudao-spring-boot-starter-web')
+    api project(':modules:yudao-spring-boot-starter-redis')
+    compileOnly libs.lock4j
+    testImplementation project(':modules:yudao-spring-boot-starter-test')
+}

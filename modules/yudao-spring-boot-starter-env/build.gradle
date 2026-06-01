@@ -1,0 +1,13 @@
+plugins {
+    id 'yudao-java'
+}
+
+dependencies {
+    api project(':modules:yudao-common')
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework:spring-web'
+    implementation 'jakarta.servlet:jakarta.servlet-api'
+    implementation 'org.springframework.cloud:spring-cloud-loadbalancer'
+    implementation 'io.github.openfeign:feign-core'
+    implementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery'
+}

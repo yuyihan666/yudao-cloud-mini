@@ -1,0 +1,30 @@
+plugins {
+    id 'yudao-spring-app'
+}
+
+dependencies {
+    implementation project(':modules:yudao-spring-boot-starter-env')
+    implementation project(':modules:yudao-module-infra-api')
+
+    implementation project(':modules:yudao-spring-boot-starter-biz-tenant')
+    implementation project(':modules:yudao-spring-boot-starter-security')
+    implementation project(':modules:yudao-spring-boot-starter-websocket')
+    implementation project(':modules:yudao-spring-boot-starter-mybatis')
+    implementation libs.mybatis.plus.generator
+    implementation project(':modules:yudao-spring-boot-starter-redis')
+    implementation project(':modules:yudao-spring-boot-starter-rpc')
+    implementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery'
+    implementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config'
+    implementation project(':modules:yudao-spring-boot-starter-job')
+    implementation project(':modules:yudao-spring-boot-starter-mq')
+    implementation project(':modules:yudao-spring-boot-starter-excel')
+    implementation libs.velocity
+    implementation project(':modules:yudao-spring-boot-starter-monitor')
+
+    implementation 'commons-net:commons-net:3.13.0'
+    implementation 'com.github.mwiede:jsch:2.28.2'
+    implementation libs.aws.s3
+    implementation libs.tika.core
+
+    testImplementation project(':modules:yudao-spring-boot-starter-test')
+}

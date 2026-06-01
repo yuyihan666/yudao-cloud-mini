@@ -1,0 +1,14 @@
+plugins {
+    id 'yudao-java'
+}
+
+dependencies {
+    api project(':modules:yudao-common')
+    api project(':modules:yudao-spring-boot-starter-mybatis')
+    api project(':modules:yudao-spring-boot-starter-redis')
+    api libs.mockito
+    api 'org.springframework.boot:spring-boot-starter-test'
+    runtimeOnly 'com.h2database:h2'
+    api libs.jedis.mock
+    api libs.podam
+}

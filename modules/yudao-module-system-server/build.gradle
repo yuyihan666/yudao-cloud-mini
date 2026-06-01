@@ -1,0 +1,38 @@
+plugins {
+    id 'yudao-spring-app'
+}
+
+dependencies {
+    implementation project(':modules:yudao-spring-boot-starter-env')
+    implementation project(':modules:yudao-module-system-api')
+    implementation project(':modules:yudao-module-infra-api')
+
+    implementation project(':modules:yudao-spring-boot-starter-biz-data-permission')
+    implementation project(':modules:yudao-spring-boot-starter-biz-tenant')
+    implementation project(':modules:yudao-spring-boot-starter-biz-ip')
+
+    implementation project(':modules:yudao-spring-boot-starter-security')
+    implementation project(':modules:yudao-spring-boot-starter-mybatis')
+    implementation project(':modules:yudao-spring-boot-starter-redis')
+    implementation project(':modules:yudao-spring-boot-starter-rpc')
+    implementation project(':modules:yudao-spring-boot-starter-job')
+    implementation project(':modules:yudao-spring-boot-starter-mq')
+    implementation project(':modules:yudao-spring-boot-starter-excel')
+    implementation project(':modules:yudao-spring-boot-starter-monitor')
+
+    implementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery'
+    implementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config'
+
+    implementation libs.justauth
+    implementation(libs.justauth.starter) {
+        exclude group: 'cn.hutool', module: 'hutool-core'
+    }
+    implementation libs.weixin.mp
+    implementation libs.weixin.miniapp
+    implementation 'com.anji-plus:captcha-spring-boot-starter:1.4.0'
+    implementation libs.hutool.extra
+    implementation libs.commons.lang3
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    testImplementation project(':modules:yudao-spring-boot-starter-test')
+}

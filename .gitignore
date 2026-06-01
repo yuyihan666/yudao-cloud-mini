@@ -77,3 +77,5 @@ functions/mock
 screenshot
 .firebase
 sessionStore
+build-logic/build/
+modules/*/build/

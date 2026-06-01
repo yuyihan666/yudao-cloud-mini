@@ -1,0 +1,16 @@
+plugins {
+    id 'yudao-java'
+}
+
+dependencies {
+    api project(':modules:yudao-common')
+    implementation 'org.springframework.boot:spring-boot-starter'
+    compileOnly project(':modules:yudao-spring-boot-starter-rpc')
+    compileOnly 'org.springframework:spring-web'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api'
+    compileOnly 'jakarta.validation:jakarta.validation-api'
+    api libs.fastexcel
+    api libs.guava
+    compileOnly project(':modules:yudao-spring-boot-starter-biz-ip')
+    testImplementation project(':modules:yudao-spring-boot-starter-test')
+}

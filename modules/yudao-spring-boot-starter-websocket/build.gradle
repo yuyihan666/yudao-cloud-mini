@@ -1,0 +1,17 @@
+plugins {
+    id 'yudao-java'
+}
+
+dependencies {
+    api project(':modules:yudao-common')
+    compileOnly project(':modules:yudao-spring-boot-starter-security')
+    compileOnly 'org.springframework.security:spring-security-core'
+    compileOnly 'org.springframework.security:spring-security-config'
+    compileOnly 'org.springframework.security:spring-security-web'
+    api 'org.springframework.boot:spring-boot-starter-websocket'
+    api project(':modules:yudao-spring-boot-starter-mq')
+    compileOnly 'org.springframework.kafka:spring-kafka'
+    compileOnly 'org.springframework.amqp:spring-rabbit'
+    compileOnly libs.rocketmq.spring
+    compileOnly project(':modules:yudao-spring-boot-starter-biz-tenant')
+}

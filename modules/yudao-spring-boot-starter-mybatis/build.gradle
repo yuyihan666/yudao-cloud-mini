@@ -1,0 +1,26 @@
+plugins {
+    id 'yudao-java'
+}
+
+dependencies {
+    api project(':modules:yudao-common')
+    compileOnly project(':modules:yudao-spring-boot-starter-security')
+
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    compileOnly 'com.oracle.database.jdbc:ojdbc8'
+    compileOnly 'org.postgresql:postgresql'
+    compileOnly 'com.microsoft.sqlserver:mssql-jdbc'
+    compileOnly libs.dm.jdbc
+    compileOnly libs.kingbase
+    compileOnly libs.opengauss.jdbc
+
+    api libs.druid
+    api libs.mybatis.plus
+    api libs.mybatis.plus.jsqlparser
+    api libs.mybatis.plus.join
+    api libs.dynamic.datasource
+    api libs.easy.trans.starter
+    api libs.easy.trans.mybatis
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}

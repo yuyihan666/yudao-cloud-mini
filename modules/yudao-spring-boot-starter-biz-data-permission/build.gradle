@@ -1,0 +1,11 @@
+plugins {
+    id 'yudao-java'
+}
+
+dependencies {
+    api project(':modules:yudao-common')
+    compileOnly project(':modules:yudao-spring-boot-starter-security')
+    api project(':modules:yudao-spring-boot-starter-mybatis')
+    compileOnly project(':modules:yudao-spring-boot-starter-rpc')
+    testImplementation project(':modules:yudao-spring-boot-starter-test')
+}

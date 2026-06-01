@@ -14,15 +14,30 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 dependencies {
-    api(platform(libs.spring.boot.bom))
-    api(platform(libs.spring.cloud.bom))
-    api(platform(libs.spring.cloud.alibaba.bom))
+    // BOMs as enforced platform - propagate to api, implementation, compileOnly, compileClasspath
+    api(enforcedPlatform(libs.spring.boot.bom))
+    api(enforcedPlatform(libs.spring.cloud.bom))
+    api(enforcedPlatform(libs.spring.cloud.alibaba.bom))
+
+    // BOMs on annotationProcessor (doesn't extend from api)
+    annotationProcessor(enforcedPlatform(libs.spring.boot.bom))
+    annotationProcessor(enforcedPlatform(libs.spring.cloud.bom))
+    annotationProcessor(enforcedPlatform(libs.spring.cloud.alibaba.bom))
 
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
-    annotationProcessor 'org.mapstruct:mapstruct-processor'
+    annotationProcessor libs.mapstruct.processor
 
     compileOnly 'org.projectlombok:lombok'
-    implementation 'org.mapstruct:mapstruct'
+    implementation libs.mapstruct
+}
+
+// Force specific versions that differ from the BOM
+configurations.configureEach {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'org.apache.commons' && details.requested.name == 'commons-lang3') {
+            details.useVersion '3.20.0'
+        }
+    }
 }
