@@ -32,6 +32,9 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok'
     implementation libs.mapstruct
+
+    // JUnit Platform launcher required for test execution
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 // Force specific versions that differ from the BOM
