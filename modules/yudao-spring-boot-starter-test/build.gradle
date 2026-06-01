@@ -8,7 +8,14 @@ dependencies {
     api project(':modules:yudao-spring-boot-starter-redis')
     api libs.mockito
     api 'org.springframework.boot:spring-boot-starter-test'
+    api 'org.springframework.boot:spring-boot-testcontainers'
+
+    api(enforcedPlatform(libs.testcontainers.bom))
+    api libs.testcontainers.mysql
+    api libs.testcontainers.junit
+
     runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'com.mysql:mysql-connector-j'
     api libs.jedis.mock
     api libs.podam
 }

@@ -29,6 +29,7 @@ opentracing = "0.33.0"
 podam = "8.0.2.RELEASE"
 jedis-mock = "1.1.12"
 mockito = "5.18.0"
+testcontainers = "1.21.1"
 # 工具
 lombok = "1.18.46"
 lombok-mapstruct-binding = "0.2.0"
@@ -97,6 +98,9 @@ opentracing-util = { module = "io.opentracing:opentracing-util", version.ref = "
 # Test
 jedis-mock = { module = "com.github.fppt:jedis-mock", version.ref = "jedis-mock" }
 podam = { module = "uk.co.jemos.podam:podam", version.ref = "podam" }
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+testcontainers-mysql = { module = "org.testcontainers:mysql" }
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter" }
 # 工具
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 lombok-mapstruct-binding = { module = "org.projectlombok:lombok-mapstruct-binding", version.ref = "lombok-mapstruct-binding" }
