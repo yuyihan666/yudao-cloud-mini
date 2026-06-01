@@ -48,8 +48,6 @@ configurations.configureEach {
 
 // ========== Agent-friendly test configuration ==========
 tasks.withType(Test).configureEach {
-    useJUnitPlatform()
-
     testLogging {
         events "passed", "skipped", "failed"
         showExceptions true

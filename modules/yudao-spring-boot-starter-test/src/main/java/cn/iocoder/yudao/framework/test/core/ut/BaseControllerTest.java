@@ -7,6 +7,15 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 
+/**
+ * Controller slice test base.
+ *
+ * <p>Provides a shared {@link MockMvc} and a pre-configured {@link ObjectMapper}.
+ * Note: the ObjectMapper is manually constructed (JavaTimeModule, NON_NULL inclusion,
+ * no timestamp dates) and does <b>not</b> reflect the application's Spring-configured
+ * Jackson settings. If you need the production ObjectMapper, inject it via
+ * {@code @Autowired ObjectMapper} in your test class instead.
+ */
 public abstract class BaseControllerTest {
 
     @Autowired
