@@ -20,6 +20,14 @@ public class SocialAuthRequestFactory {
         return get(source, defaultConfigs.get(normalizeSource(source)));
     }
 
+    public SocialAuthClientConfig getConfig(String source) {
+        SocialAuthClientConfig config = defaultConfigs.get(normalizeSource(source));
+        if (config == null) {
+            throw new IllegalArgumentException("missing social auth config: " + source);
+        }
+        return config;
+    }
+
     public SocialAuthRequest get(String source, SocialAuthClientConfig config) {
         String normalizedSource = normalizeSource(source);
         SocialAuthRequestBuilder requestBuilder = requestBuilders.get(normalizedSource);

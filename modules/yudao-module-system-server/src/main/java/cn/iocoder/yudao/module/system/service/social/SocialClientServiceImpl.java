@@ -15,7 +15,7 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.DesensitizedUtil;
 import cn.hutool.core.util.ObjUtil;
-import cn.hutool.core.util.ReflectUtil;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import cn.iocoder.yudao.framework.common.enums.UserTypeEnum;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -32,7 +32,10 @@ import cn.iocoder.yudao.module.system.dal.dataobject.social.SocialClientDO;
 import cn.iocoder.yudao.module.system.dal.mysql.social.SocialClientMapper;
 import cn.iocoder.yudao.module.system.dal.redis.RedisKeyConstants;
 import cn.iocoder.yudao.module.system.enums.social.SocialTypeEnum;
-import cn.iocoder.yudao.module.system.framework.justauth.core.AuthRequestFactory;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthCallback;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthClientConfig;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequest;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequestFactory;
 import cn.iocoder.yudao.module.system.service.social.dto.SocialAuthUser;
 import com.binarywang.spring.starter.wxjava.miniapp.properties.WxMaProperties;
 import com.binarywang.spring.starter.wxjava.mp.properties.WxMpProperties;
@@ -49,13 +52,6 @@ import me.chanjar.weixin.common.redis.RedisTemplateWxRedisOps;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.api.impl.WxMpServiceImpl;
 import me.chanjar.weixin.mp.config.impl.WxMpRedisConfigImpl;
-import me.zhyd.oauth.config.AuthConfig;
-import me.zhyd.oauth.model.AuthCallback;
-import me.zhyd.oauth.model.AuthResponse;
-import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.request.AuthAlipayRequest;
-import me.zhyd.oauth.request.AuthRequest;
-import me.zhyd.oauth.utils.AuthStateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -74,6 +70,7 @@ import static cn.iocoder.yudao.framework.common.util.date.LocalDateTimeUtils.UTC
 import static cn.iocoder.yudao.framework.common.util.date.LocalDateTimeUtils.toEpochSecond;
 import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.toJsonString;
 import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateSupport.createState;
 import static java.util.Collections.singletonList;
 
 /**
@@ -114,8 +111,8 @@ public class SocialClientServiceImpl implements SocialClientService {
     private static final int WX_ERR_CODE_PAY_ORDER_NOT_EXIST = 10060001;
 
     @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
-    @Autowired(required = false) // 由于 justauth.enable 配置项，可以关闭 AuthRequestFactory 的功能，所以这里只能不强制注入
-    private AuthRequestFactory authRequestFactory;
+    @Autowired(required = false) // 由于 justauth.enabled 配置项可以关闭，所以这里只能不强制注入
+    private SocialAuthRequestFactory socialAuthRequestFactory;
 
     @Resource
     private WxMpService wxMpService;
@@ -169,72 +166,62 @@ public class SocialClientServiceImpl implements SocialClientService {
 
     @Override
     public String getAuthorizeUrl(Integer socialType, Integer userType, String redirectUri) {
-        // 获得对应的 AuthRequest 实现
-        AuthRequest authRequest = buildAuthRequest(socialType, userType);
+        // 获得对应的 SocialAuthRequest 实现
+        SocialAuthRequest authRequest = buildAuthRequest(socialType, userType);
         // 生成跳转地址
-        String authorizeUri = authRequest.authorize(AuthStateUtils.createState());
+        String authorizeUri = authRequest.authorize(createState());
         return HttpUtils.replaceUrlQuery(authorizeUri, "redirect_uri", redirectUri);
     }
 
     @Override
     public SocialAuthUser getAuthUser(Integer socialType, Integer userType, String code, String state) {
         // 构建请求
-        AuthRequest authRequest = buildAuthRequest(socialType, userType);
-        AuthCallback authCallback = AuthCallback.builder().code(code).auth_code(code).state(state).build();
+        SocialAuthRequest authRequest = buildAuthRequest(socialType, userType);
+        SocialAuthCallback authCallback = new SocialAuthCallback().setCode(code).setState(state);
         // 执行请求
-        AuthResponse<?> authResponse = authRequest.login(authCallback);
-        log.info("[getAuthUser][请求社交平台 type({}) request({}) response({})]", socialType,
-                toJsonString(authCallback), toJsonString(authResponse));
-        if (!authResponse.ok()) {
-            throw exception(SOCIAL_USER_AUTH_FAILURE, authResponse.getMsg());
+        try {
+            SocialAuthUser authUser = authRequest.login(authCallback);
+            log.info("[getAuthUser][请求社交平台 type({}) request({}) response({})]", socialType,
+                    toJsonString(authCallback), toJsonString(authUser));
+            return authUser;
+        } catch (ServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("[getAuthUser][请求社交平台 type({}) request({}) 失败]", socialType, toJsonString(authCallback), e);
+            throw exception(SOCIAL_USER_AUTH_FAILURE, e.getMessage());
         }
-        return convertAuthUser((AuthUser) authResponse.getData());
-    }
-
-    private SocialAuthUser convertAuthUser(AuthUser authUser) {
-        if (authUser == null) {
-            return null;
-        }
-        return new SocialAuthUser()
-                .setUuid(authUser.getUuid())
-                .setNickname(authUser.getNickname())
-                .setAvatar(authUser.getAvatar())
-                .setAccessToken(authUser.getToken().getAccessToken())
-                .setRawTokenInfo(toJsonString(authUser.getToken()))
-                .setRawUserInfo(toJsonString(authUser.getRawUserInfo()));
     }
 
     /**
-     * 构建 AuthRequest 对象，支持多租户配置
+     * 构建 SocialAuthRequest 对象，支持多租户配置
      *
      * @param socialType 社交类型
      * @param userType   用户类型
-     * @return AuthRequest 对象
+     * @return SocialAuthRequest 对象
      */
     @VisibleForTesting
-    AuthRequest buildAuthRequest(Integer socialType, Integer userType) {
+    SocialAuthRequest buildAuthRequest(Integer socialType, Integer userType) {
         // 1. 先查找默认的配置项，从 application-*.yaml 中读取
-        AuthRequest request = authRequestFactory.get(SocialTypeEnum.valueOfType(socialType).getSource());
+        String source = SocialTypeEnum.valueOfType(socialType).getSource();
+        SocialAuthRequest request = socialAuthRequestFactory.get(source);
         Assert.notNull(request, String.format("社交平台(%d) 不存在", socialType));
         // 2. 查询 DB 的配置项，如果存在则进行覆盖
         SocialClientDO client = socialClientMapper.selectBySocialTypeAndUserType(socialType, userType);
         if (client != null && Objects.equals(client.getStatus(), CommonStatusEnum.ENABLE.getStatus())) {
-            // 2.1 构造新的 AuthConfig 对象
-            AuthConfig authConfig = (AuthConfig) ReflectUtil.getFieldValue(request, "config");
-            AuthConfig newAuthConfig = ReflectUtil.newInstance(authConfig.getClass());
-            BeanUtil.copyProperties(authConfig, newAuthConfig);
+            // 2.1 构造新的 SocialAuthClientConfig 对象
+            SocialAuthClientConfig newAuthConfig = new SocialAuthClientConfig();
+            BeanUtil.copyProperties(socialAuthRequestFactory.getConfig(source), newAuthConfig);
             // 2.2 修改对应的 clientId + clientSecret 密钥
             newAuthConfig.setClientId(client.getClientId());
             newAuthConfig.setClientSecret(client.getClientSecret());
             if (client.getAgentId() != null) { // 如果有 agentId 则修改 agentId
                 newAuthConfig.setAgentId(client.getAgentId());
             }
-            // 2.3 设置会 request 里，进行后续使用
-            if (SocialTypeEnum.ALIPAY_MINI_PROGRAM.getType().equals(socialType)) {
-                // 特殊：如果是支付宝的小程序，多了 publicKey 属性，可见 AuthConfig 里的 alipayPublicKey 字段说明
-                return new AuthAlipayRequest(newAuthConfig, client.getPublicKey());
+            if (client.getPublicKey() != null) { // 如果有 publicKey 则修改 publicKey
+                newAuthConfig.setPublicKey(client.getPublicKey());
             }
-            ReflectUtil.setFieldValue(request, "config", newAuthConfig);
+            // 2.3 使用覆盖配置重新创建 request，进行后续使用
+            return socialAuthRequestFactory.get(source, newAuthConfig);
         }
         return request;
     }
