@@ -18,6 +18,7 @@ import cn.iocoder.yudao.module.system.dal.dataobject.social.SocialClientDO;
 import cn.iocoder.yudao.module.system.dal.mysql.social.SocialClientMapper;
 import cn.iocoder.yudao.module.system.enums.social.SocialTypeEnum;
 import cn.iocoder.yudao.module.system.framework.justauth.core.AuthRequestFactory;
+import cn.iocoder.yudao.module.system.service.social.dto.SocialAuthUser;
 import com.binarywang.spring.starter.wxjava.miniapp.properties.WxMaProperties;
 import com.binarywang.spring.starter.wxjava.mp.properties.WxMpProperties;
 import jakarta.annotation.Resource;
@@ -27,6 +28,7 @@ import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.model.AuthResponse;
+import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.request.AuthDefaultRequest;
 import me.zhyd.oauth.request.AuthRequest;
@@ -39,6 +41,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static cn.hutool.core.util.RandomUtil.randomEle;
+import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.toJsonString;
 import static cn.iocoder.yudao.framework.common.util.object.ObjectUtils.cloneIgnoreId;
 import static cn.iocoder.yudao.framework.test.core.util.AssertUtils.assertPojoEquals;
 import static cn.iocoder.yudao.framework.test.core.util.AssertUtils.assertServiceException;
@@ -107,7 +110,10 @@ public class SocialClientServiceImplTest extends BaseDbUnitTest {
         AuthRequest authRequest = mock(AuthRequest.class);
         when(authRequestFactory.get(eq("WECHAT_MP"))).thenReturn(authRequest);
         // mock 方法（AuthResponse）
-        AuthUser authUser = randomPojo(AuthUser.class);
+        AuthToken authToken = AuthToken.builder().accessToken(randomString()).refreshToken(randomString()).build();
+        AuthUser authUser = AuthUser.builder()
+                .uuid(randomString()).nickname(randomString()).avatar(randomString()).token(authToken)
+                .build();
         AuthResponse<AuthUser> authResponse = new AuthResponse<>(2000, null, authUser);
         when(authRequest.login(argThat(authCallback -> {
             assertEquals(code, authCallback.getCode());
@@ -116,9 +122,14 @@ public class SocialClientServiceImplTest extends BaseDbUnitTest {
         }))).thenReturn(authResponse);
 
         // 调用
-        AuthUser result = socialClientService.getAuthUser(socialType, userType, code, state);
+        SocialAuthUser result = socialClientService.getAuthUser(socialType, userType, code, state);
         // 断言
-        assertSame(authUser, result);
+        assertEquals(authUser.getUuid(), result.getUuid());
+        assertEquals(authUser.getNickname(), result.getNickname());
+        assertEquals(authUser.getAvatar(), result.getAvatar());
+        assertEquals(authToken.getAccessToken(), result.getAccessToken());
+        assertEquals(toJsonString(authToken), result.getRawTokenInfo());
+        assertEquals(toJsonString(authUser.getRawUserInfo()), result.getRawUserInfo());
     }
 
     @Test

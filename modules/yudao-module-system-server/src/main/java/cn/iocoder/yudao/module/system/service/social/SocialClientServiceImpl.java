@@ -33,6 +33,7 @@ import cn.iocoder.yudao.module.system.dal.mysql.social.SocialClientMapper;
 import cn.iocoder.yudao.module.system.dal.redis.RedisKeyConstants;
 import cn.iocoder.yudao.module.system.enums.social.SocialTypeEnum;
 import cn.iocoder.yudao.module.system.framework.justauth.core.AuthRequestFactory;
+import cn.iocoder.yudao.module.system.service.social.dto.SocialAuthUser;
 import com.binarywang.spring.starter.wxjava.miniapp.properties.WxMaProperties;
 import com.binarywang.spring.starter.wxjava.mp.properties.WxMpProperties;
 import com.google.common.annotations.VisibleForTesting;
@@ -176,7 +177,7 @@ public class SocialClientServiceImpl implements SocialClientService {
     }
 
     @Override
-    public AuthUser getAuthUser(Integer socialType, Integer userType, String code, String state) {
+    public SocialAuthUser getAuthUser(Integer socialType, Integer userType, String code, String state) {
         // 构建请求
         AuthRequest authRequest = buildAuthRequest(socialType, userType);
         AuthCallback authCallback = AuthCallback.builder().code(code).auth_code(code).state(state).build();
@@ -187,7 +188,20 @@ public class SocialClientServiceImpl implements SocialClientService {
         if (!authResponse.ok()) {
             throw exception(SOCIAL_USER_AUTH_FAILURE, authResponse.getMsg());
         }
-        return (AuthUser) authResponse.getData();
+        return convertAuthUser((AuthUser) authResponse.getData());
+    }
+
+    private SocialAuthUser convertAuthUser(AuthUser authUser) {
+        if (authUser == null) {
+            return null;
+        }
+        return new SocialAuthUser()
+                .setUuid(authUser.getUuid())
+                .setNickname(authUser.getNickname())
+                .setAvatar(authUser.getAvatar())
+                .setAccessToken(authUser.getToken().getAccessToken())
+                .setRawTokenInfo(toJsonString(authUser.getToken()))
+                .setRawUserInfo(toJsonString(authUser.getRawUserInfo()));
     }
 
     /**

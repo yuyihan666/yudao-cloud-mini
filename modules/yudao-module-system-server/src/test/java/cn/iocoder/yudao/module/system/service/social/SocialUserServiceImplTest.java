@@ -11,8 +11,8 @@ import cn.iocoder.yudao.module.system.dal.dataobject.social.SocialUserDO;
 import cn.iocoder.yudao.module.system.dal.mysql.social.SocialUserBindMapper;
 import cn.iocoder.yudao.module.system.dal.mysql.social.SocialUserMapper;
 import cn.iocoder.yudao.module.system.enums.social.SocialTypeEnum;
+import cn.iocoder.yudao.module.system.service.social.dto.SocialAuthUser;
 import jakarta.annotation.Resource;
-import me.zhyd.oauth.model.AuthUser;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -23,7 +23,6 @@ import static cn.hutool.core.util.RandomUtil.randomEle;
 import static cn.hutool.core.util.RandomUtil.randomLong;
 import static cn.iocoder.yudao.framework.common.util.date.LocalDateTimeUtils.buildBetweenTime;
 import static cn.iocoder.yudao.framework.common.util.date.LocalDateTimeUtils.buildTime;
-import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.toJsonString;
 import static cn.iocoder.yudao.framework.common.util.object.ObjectUtils.cloneIgnoreId;
 import static cn.iocoder.yudao.framework.test.core.util.AssertUtils.assertPojoEquals;
 import static cn.iocoder.yudao.framework.test.core.util.AssertUtils.assertServiceException;
@@ -196,7 +195,7 @@ public class SocialUserServiceImplTest extends BaseDbUnitTest {
         String code = "tudou";
         String state = "yuanma";
         // mock 方法
-        AuthUser authUser = randomPojo(AuthUser.class);
+        SocialAuthUser authUser = randomPojo(SocialAuthUser.class);
         when(socialClientService.getAuthUser(eq(socialType), eq(userType), eq(code), eq(state))).thenReturn(authUser);
 
         // 调用
@@ -217,7 +216,7 @@ public class SocialUserServiceImplTest extends BaseDbUnitTest {
         // mock 数据
         socialUserMapper.insert(randomPojo(SocialUserDO.class).setType(socialType).setOpenid("test_openid"));
         // mock 方法
-        AuthUser authUser = randomPojo(AuthUser.class);
+        SocialAuthUser authUser = randomPojo(SocialAuthUser.class);
         when(socialClientService.getAuthUser(eq(socialType), eq(userType), eq(code), eq(state))).thenReturn(authUser);
 
         // 调用
@@ -228,12 +227,12 @@ public class SocialUserServiceImplTest extends BaseDbUnitTest {
         assertEquals(state, result.getState());
     }
 
-    private void assertBindSocialUser(Integer type, SocialUserDO socialUser, AuthUser authUser) {
-        assertEquals(authUser.getToken().getAccessToken(), socialUser.getToken());
-        assertEquals(toJsonString(authUser.getToken()), socialUser.getRawTokenInfo());
+    private void assertBindSocialUser(Integer type, SocialUserDO socialUser, SocialAuthUser authUser) {
+        assertEquals(authUser.getAccessToken(), socialUser.getToken());
+        assertEquals(authUser.getRawTokenInfo(), socialUser.getRawTokenInfo());
         assertEquals(authUser.getNickname(), socialUser.getNickname());
         assertEquals(authUser.getAvatar(), socialUser.getAvatar());
-        assertEquals(toJsonString(authUser.getRawUserInfo()), socialUser.getRawUserInfo());
+        assertEquals(authUser.getRawUserInfo(), socialUser.getRawUserInfo());
         assertEquals(type, socialUser.getType());
         assertEquals(authUser.getUuid(), socialUser.getOpenid());
     }

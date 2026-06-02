@@ -22,6 +22,7 @@ Remove these artifacts from all production and test runtime classpaths:
 |---|---|---|
 | Source fastjson usage removed | Complete | No direct `com.alibaba.fastjson*` imports found |
 | Direct Gradle fastjson declarations removed | Complete | `gradle/libs.versions.toml` no longer declares `fastjson`; `rg` finds no build references |
+| Business social-auth boundary isolated | Complete | `SocialUserServiceImplTest` passes with `-PexcludeFastjsonForTests=true`; JustAuth `AuthUser` remains only in the temporary adapter |
 | Test runtime exclusion experiment | Blocked for system module | `yudao-common:test` and `yudao-spring-boot-starter-mybatis:test` pass with `-PexcludeFastjsonForTests=true`; `yudao-module-system-server:agentVerify` fails because JustAuth `AuthUser` declares `com.alibaba.fastjson.JSONObject rawUserInfo` |
 | Production runtime exclusion experiment | Partial | `yudao-common`, `yudao-spring-boot-starter-mybatis`, `yudao-gateway`, and `yudao-module-infra-server` runtime dependency insight is clean by default; `yudao-module-system-server` and `yudao-server` remain blocked by JustAuth |
 | Default runtime exclusion | Partial | Fastjson is excluded by default outside `:modules:yudao-module-system-server` and `:modules:yudao-server`; gateway and infra boot jars contain no `fastjson`, `fastjson2`, or `fastjson2-extension` jars |
