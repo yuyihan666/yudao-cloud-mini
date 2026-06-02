@@ -17,7 +17,11 @@ import cn.iocoder.yudao.module.system.controller.admin.socail.vo.client.SocialCl
 import cn.iocoder.yudao.module.system.dal.dataobject.social.SocialClientDO;
 import cn.iocoder.yudao.module.system.dal.mysql.social.SocialClientMapper;
 import cn.iocoder.yudao.module.system.enums.social.SocialTypeEnum;
-import cn.iocoder.yudao.module.system.framework.justauth.core.AuthRequestFactory;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthCallback;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthClientConfig;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequest;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequestFactory;
+import cn.iocoder.yudao.module.system.service.social.dto.SocialAuthUser;
 import com.binarywang.spring.starter.wxjava.miniapp.properties.WxMaProperties;
 import com.binarywang.spring.starter.wxjava.mp.properties.WxMpProperties;
 import jakarta.annotation.Resource;
@@ -25,20 +29,14 @@ import me.chanjar.weixin.common.bean.WxJsapiSignature;
 import me.chanjar.weixin.common.error.WxError;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
-import me.zhyd.oauth.config.AuthConfig;
-import me.zhyd.oauth.model.AuthResponse;
-import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.request.AuthDefaultRequest;
-import me.zhyd.oauth.request.AuthRequest;
-import me.zhyd.oauth.utils.AuthStateUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static cn.hutool.core.util.RandomUtil.randomEle;
+import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.object.ObjectUtils.cloneIgnoreId;
 import static cn.iocoder.yudao.framework.test.core.util.AssertUtils.assertPojoEquals;
 import static cn.iocoder.yudao.framework.test.core.util.AssertUtils.assertServiceException;
@@ -62,7 +60,7 @@ public class SocialClientServiceImplTest extends BaseDbUnitTest {
     private SocialClientMapper socialClientMapper;
 
     @MockitoBean
-    private AuthRequestFactory authRequestFactory;
+    private SocialAuthRequestFactory socialAuthRequestFactory;
 
     @MockitoBean
     private WxMpService wxMpService;
@@ -77,23 +75,20 @@ public class SocialClientServiceImplTest extends BaseDbUnitTest {
 
     @Test
     public void testGetAuthorizeUrl() {
-        try (MockedStatic<AuthStateUtils> authStateUtilsMock = mockStatic(AuthStateUtils.class)) {
-            // 准备参数
-            Integer socialType = SocialTypeEnum.WECHAT_MP.getType();
-            Integer userType = randomPojo(UserTypeEnum.class).getValue();
-            String redirectUri = "sss";
-            // mock 获得对应的 AuthRequest 实现
-            AuthRequest authRequest = mock(AuthRequest.class);
-            when(authRequestFactory.get(eq("WECHAT_MP"))).thenReturn(authRequest);
-            // mock 方法
-            authStateUtilsMock.when(AuthStateUtils::createState).thenReturn("aoteman");
-            when(authRequest.authorize(eq("aoteman"))).thenReturn("https://www.iocoder.cn?redirect_uri=yyy");
+        // 准备参数
+        Integer socialType = SocialTypeEnum.WECHAT_MP.getType();
+        Integer userType = randomPojo(UserTypeEnum.class).getValue();
+        String redirectUri = "sss";
+        // mock 获得对应的 SocialAuthRequest 实现
+        SocialAuthRequest authRequest = mock(SocialAuthRequest.class);
+        when(socialAuthRequestFactory.get(eq("WECHAT_MP"))).thenReturn(authRequest);
+        when(authRequest.authorize(anyString())).thenReturn("https://www.iocoder.cn?redirect_uri=yyy");
 
-            // 调用
-            String url = socialClientService.getAuthorizeUrl(socialType, userType, redirectUri);
-            // 断言
-            assertEquals("https://www.iocoder.cn?redirect_uri=sss", url);
-        }
+        // 调用
+        String url = socialClientService.getAuthorizeUrl(socialType, userType, redirectUri);
+        // 断言
+        assertEquals("https://www.iocoder.cn?redirect_uri=sss", url);
+        verify(authRequest).authorize(anyString());
     }
 
     @Test
@@ -103,20 +98,24 @@ public class SocialClientServiceImplTest extends BaseDbUnitTest {
         Integer userType = randomPojo(UserTypeEnum.class).getValue();
         String code = randomString();
         String state = randomString();
-        // mock 方法（AuthRequest）
-        AuthRequest authRequest = mock(AuthRequest.class);
-        when(authRequestFactory.get(eq("WECHAT_MP"))).thenReturn(authRequest);
-        // mock 方法（AuthResponse）
-        AuthUser authUser = randomPojo(AuthUser.class);
-        AuthResponse<AuthUser> authResponse = new AuthResponse<>(2000, null, authUser);
+        // mock 方法（SocialAuthRequest）
+        SocialAuthRequest authRequest = mock(SocialAuthRequest.class);
+        when(socialAuthRequestFactory.get(eq("WECHAT_MP"))).thenReturn(authRequest);
+        SocialAuthUser authUser = new SocialAuthUser()
+                .setUuid(randomString())
+                .setNickname(randomString())
+                .setAvatar(randomString())
+                .setAccessToken(randomString())
+                .setRawTokenInfo(randomString())
+                .setRawUserInfo(randomString());
         when(authRequest.login(argThat(authCallback -> {
             assertEquals(code, authCallback.getCode());
             assertEquals(state, authCallback.getState());
             return true;
-        }))).thenReturn(authResponse);
+        }))).thenReturn(authUser);
 
         // 调用
-        AuthUser result = socialClientService.getAuthUser(socialType, userType, code, state);
+        SocialAuthUser result = socialClientService.getAuthUser(socialType, userType, code, state);
         // 断言
         assertSame(authUser, result);
     }
@@ -128,16 +127,14 @@ public class SocialClientServiceImplTest extends BaseDbUnitTest {
         Integer userType = randomPojo(UserTypeEnum.class).getValue();
         String code = randomString();
         String state = randomString();
-        // mock 方法（AuthRequest）
-        AuthRequest authRequest = mock(AuthRequest.class);
-        when(authRequestFactory.get(eq("WECHAT_MP"))).thenReturn(authRequest);
-        // mock 方法（AuthResponse）
-        AuthResponse<AuthUser> authResponse = new AuthResponse<>(0, "模拟失败", null);
+        // mock 方法（SocialAuthRequest）
+        SocialAuthRequest authRequest = mock(SocialAuthRequest.class);
+        when(socialAuthRequestFactory.get(eq("WECHAT_MP"))).thenReturn(authRequest);
         when(authRequest.login(argThat(authCallback -> {
             assertEquals(code, authCallback.getCode());
             assertEquals(state, authCallback.getState());
             return true;
-        }))).thenReturn(authResponse);
+        }))).thenThrow(exception(SOCIAL_USER_AUTH_FAILURE, "模拟失败"));
 
         // 调用并断言
         assertServiceException(
@@ -150,16 +147,15 @@ public class SocialClientServiceImplTest extends BaseDbUnitTest {
         // 准备参数
         Integer socialType = SocialTypeEnum.WECHAT_MP.getType();
         Integer userType = randomPojo(SocialTypeEnum.class).getType();
-        // mock 获得对应的 AuthRequest 实现
-        AuthRequest authRequest = mock(AuthDefaultRequest.class);
-        AuthConfig authConfig = (AuthConfig) ReflectUtil.getFieldValue(authRequest, "config");
-        when(authRequestFactory.get(eq("WECHAT_MP"))).thenReturn(authRequest);
+        // mock 获得对应的 SocialAuthRequest 实现
+        SocialAuthRequest authRequest = mock(SocialAuthRequest.class);
+        when(socialAuthRequestFactory.get(eq("WECHAT_MP"))).thenReturn(authRequest);
 
         // 调用
-        AuthRequest result = socialClientService.buildAuthRequest(socialType, userType);
+        SocialAuthRequest result = socialClientService.buildAuthRequest(socialType, userType);
         // 断言
         assertSame(authRequest, result);
-        assertSame(authConfig, ReflectUtil.getFieldValue(authConfig, "config"));
+        verify(socialAuthRequestFactory, never()).get(eq("WECHAT_MP"), any());
     }
 
     @Test
@@ -167,20 +163,19 @@ public class SocialClientServiceImplTest extends BaseDbUnitTest {
         // 准备参数
         Integer socialType = SocialTypeEnum.WECHAT_MP.getType();
         Integer userType = randomPojo(SocialTypeEnum.class).getType();
-        // mock 获得对应的 AuthRequest 实现
-        AuthRequest authRequest = mock(AuthDefaultRequest.class);
-        AuthConfig authConfig = (AuthConfig) ReflectUtil.getFieldValue(authRequest, "config");
-        when(authRequestFactory.get(eq("WECHAT_MP"))).thenReturn(authRequest);
+        // mock 获得对应的 SocialAuthRequest 实现
+        SocialAuthRequest authRequest = mock(SocialAuthRequest.class);
+        when(socialAuthRequestFactory.get(eq("WECHAT_MP"))).thenReturn(authRequest);
         // mock 数据
         SocialClientDO client = randomPojo(SocialClientDO.class, o -> o.setStatus(CommonStatusEnum.DISABLE.getStatus())
                 .setUserType(userType).setSocialType(socialType));
         socialClientMapper.insert(client);
 
         // 调用
-        AuthRequest result = socialClientService.buildAuthRequest(socialType, userType);
+        SocialAuthRequest result = socialClientService.buildAuthRequest(socialType, userType);
         // 断言
         assertSame(authRequest, result);
-        assertSame(authConfig, ReflectUtil.getFieldValue(authConfig, "config"));
+        verify(socialAuthRequestFactory, never()).get(eq("WECHAT_MP"), any());
     }
 
     @Test
@@ -188,21 +183,39 @@ public class SocialClientServiceImplTest extends BaseDbUnitTest {
         // 准备参数
         Integer socialType = SocialTypeEnum.WECHAT_MP.getType();
         Integer userType = randomPojo(SocialTypeEnum.class).getType();
-        // mock 获得对应的 AuthRequest 实现
-        AuthConfig authConfig = mock(AuthConfig.class);
-        AuthRequest authRequest = mock(AuthDefaultRequest.class);
-        ReflectUtil.setFieldValue(authRequest, "config", authConfig);
-        when(authRequestFactory.get(eq("WECHAT_MP"))).thenReturn(authRequest);
+        // mock 获得对应的 SocialAuthRequest 实现
+        SocialAuthRequest authRequest = mock(SocialAuthRequest.class);
+        SocialAuthRequest overrideRequest = mock(SocialAuthRequest.class);
+        SocialAuthClientConfig defaultConfig = new SocialAuthClientConfig()
+                .setClientId("default-client-id")
+                .setClientSecret("default-client-secret")
+                .setAgentId("default-agent-id")
+                .setPublicKey("default-public-key")
+                .setRedirectUri("https://app.example.com/callback")
+                .setIgnoreCheckRedirectUri(true)
+                .setIgnoreCheckState(true);
+        when(socialAuthRequestFactory.get(eq("WECHAT_MP"))).thenReturn(authRequest);
+        when(socialAuthRequestFactory.getConfig(eq("WECHAT_MP"))).thenReturn(defaultConfig);
         // mock 数据
         SocialClientDO client = randomPojo(SocialClientDO.class, o -> o.setStatus(CommonStatusEnum.ENABLE.getStatus())
                 .setUserType(userType).setSocialType(socialType));
         socialClientMapper.insert(client);
+        when(socialAuthRequestFactory.get(eq("WECHAT_MP"), argThat(config -> {
+            assertNotSame(defaultConfig, config);
+            assertEquals(client.getClientId(), config.getClientId());
+            assertEquals(client.getClientSecret(), config.getClientSecret());
+            assertEquals(client.getAgentId(), config.getAgentId());
+            assertEquals(client.getPublicKey(), config.getPublicKey());
+            assertEquals(defaultConfig.getRedirectUri(), config.getRedirectUri());
+            assertEquals(defaultConfig.getIgnoreCheckRedirectUri(), config.getIgnoreCheckRedirectUri());
+            assertEquals(defaultConfig.getIgnoreCheckState(), config.getIgnoreCheckState());
+            return true;
+        }))).thenReturn(overrideRequest);
 
         // 调用
-        AuthRequest result = socialClientService.buildAuthRequest(socialType, userType);
+        SocialAuthRequest result = socialClientService.buildAuthRequest(socialType, userType);
         // 断言
-        assertSame(authRequest, result);
-        assertNotSame(authConfig, ReflectUtil.getFieldValue(authRequest, "config"));
+        assertSame(overrideRequest, result);
     }
 
     // =================== 微信公众号独有 ===================

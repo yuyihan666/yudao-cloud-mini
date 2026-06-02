@@ -38,6 +38,31 @@ Each test task prints:
 
 Use the HTML report for human debugging and XML results for machine parsing.
 
+## Dependency Reduction
+
+Fastjson is excluded from runtime and test runtime classpaths by default.
+
+Run the dependency guard:
+
+```bash
+./gradlew :modules:yudao-module-system-server:agentDependencyAudit
+```
+
+Run the full system-server agent verification when touching the social-auth or JSON boundary:
+
+```bash
+./gradlew :modules:yudao-module-system-server:agentVerify --rerun-tasks
+```
+
+Build production jars and scan them for removed JSON/auth libraries:
+
+```bash
+./gradlew :modules:yudao-server:bootJar :modules:yudao-gateway:bootJar :modules:yudao-module-system-server:bootJar :modules:yudao-module-infra-server:bootJar
+for jar in modules/yudao-server/build/libs/yudao-server.jar modules/yudao-gateway/build/libs/yudao-gateway.jar modules/yudao-module-system-server/build/libs/yudao-module-system-server.jar modules/yudao-module-infra-server/build/libs/yudao-module-infra-server.jar; do
+  jar tf "$jar" | rg "BOOT-INF/lib/(fastjson|fastjson2|JustAuth|justauth)" || true
+done
+```
+
 ## Rules For Agents
 
 - Do not claim success without a passing command and the gate name.

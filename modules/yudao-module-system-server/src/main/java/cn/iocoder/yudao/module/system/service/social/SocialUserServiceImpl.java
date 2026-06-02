@@ -12,10 +12,10 @@ import cn.iocoder.yudao.module.system.dal.dataobject.social.SocialUserDO;
 import cn.iocoder.yudao.module.system.dal.mysql.social.SocialUserBindMapper;
 import cn.iocoder.yudao.module.system.dal.mysql.social.SocialUserMapper;
 import cn.iocoder.yudao.module.system.enums.social.SocialTypeEnum;
+import cn.iocoder.yudao.module.system.service.social.dto.SocialAuthUser;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import me.zhyd.oauth.model.AuthUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -25,7 +25,6 @@ import java.util.List;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertSet;
-import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.toJsonString;
 import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.SOCIAL_USER_NOT_FOUND;
 
 /**
@@ -139,7 +138,7 @@ public class SocialUserServiceImpl implements SocialUserService {
         }
 
         // 请求获取
-        AuthUser authUser = socialClientService.getAuthUser(socialType, userType, code, state);
+        SocialAuthUser authUser = socialClientService.getAuthUser(socialType, userType, code, state);
         Assert.notNull(authUser, "三方用户不能为空");
 
         // 保存到 DB 中
@@ -148,8 +147,8 @@ public class SocialUserServiceImpl implements SocialUserService {
             socialUser = new SocialUserDO();
         }
         socialUser.setType(socialType).setCode(code).setState(state) // 需要保存 code + state 字段，保证后续可查询
-                .setOpenid(authUser.getUuid()).setToken(authUser.getToken().getAccessToken()).setRawTokenInfo((toJsonString(authUser.getToken())))
-                .setNickname(authUser.getNickname()).setAvatar(authUser.getAvatar()).setRawUserInfo(toJsonString(authUser.getRawUserInfo()));
+                .setOpenid(authUser.getUuid()).setToken(authUser.getAccessToken()).setRawTokenInfo(authUser.getRawTokenInfo())
+                .setNickname(authUser.getNickname()).setAvatar(authUser.getAvatar()).setRawUserInfo(authUser.getRawUserInfo());
         if (socialUser.getId() == null) {
             socialUserMapper.insert(socialUser);
         } else {

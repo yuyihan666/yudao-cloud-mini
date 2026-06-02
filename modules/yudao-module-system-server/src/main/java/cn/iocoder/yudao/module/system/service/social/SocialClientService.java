@@ -10,10 +10,10 @@ import cn.iocoder.yudao.module.system.controller.admin.socail.vo.client.SocialCl
 import cn.iocoder.yudao.module.system.controller.admin.socail.vo.client.SocialClientSaveReqVO;
 import cn.iocoder.yudao.module.system.dal.dataobject.social.SocialClientDO;
 import cn.iocoder.yudao.module.system.enums.social.SocialTypeEnum;
+import cn.iocoder.yudao.module.system.service.social.dto.SocialAuthUser;
 import jakarta.validation.Valid;
 import me.chanjar.weixin.common.bean.WxJsapiSignature;
 import me.chanjar.weixin.common.bean.subscribemsg.TemplateInfo;
-import me.zhyd.oauth.model.AuthUser;
 
 import java.util.List;
 
@@ -43,7 +43,7 @@ public interface SocialClientService {
      * @param state      授权 state
      * @return 授权的用户
      */
-    AuthUser getAuthUser(Integer socialType, Integer userType, String code, String state);
+    SocialAuthUser getAuthUser(Integer socialType, Integer userType, String code, String state);
 
     // =================== 微信公众号独有 ===================
 

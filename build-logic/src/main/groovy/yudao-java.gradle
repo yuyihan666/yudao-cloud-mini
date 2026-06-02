@@ -31,6 +31,8 @@ dependencies {
     annotationProcessor libs.mapstruct.processor
 
     compileOnly 'org.projectlombok:lombok'
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
     implementation libs.mapstruct
 
     // JUnit Platform launcher required for test execution
@@ -44,6 +46,103 @@ configurations.configureEach {
             details.useVersion '3.20.0' // KEEP IN SYNC with libs.versions.toml [versions] commons-lang
         }
     }
+}
+
+// ========== JSON dependency guardrails ==========
+def isDirectFastjsonDependency = { dep ->
+    (dep.group == 'com.alibaba' && dep.name == 'fastjson') ||
+            (dep.group == 'com.alibaba.fastjson2' && dep.name in ['fastjson2', 'fastjson2-extension'])
+}
+
+tasks.register('verifyNoFastjsonUsage') {
+    group = 'verification'
+    description = 'Fails if first-party source imports Alibaba fastjson APIs.'
+
+    doLast {
+        def sourceFiles = fileTree(project.projectDir) {
+            include 'src/main/java/**/*.java'
+            include 'src/test/java/**/*.java'
+            exclude '**/build/**'
+        }
+        def violations = []
+        sourceFiles.files.each { sourceFile ->
+            sourceFile.eachLine { line, number ->
+                def trimmed = line.trim()
+                if (trimmed.startsWith('import com.alibaba.fastjson.') ||
+                        trimmed == 'import com.alibaba.fastjson;' ||
+                        trimmed.startsWith('import com.alibaba.fastjson2.') ||
+                        trimmed == 'import com.alibaba.fastjson2;') {
+                    violations << "${project.path}:${project.relativePath(sourceFile)}:${number}: ${trimmed}"
+                }
+            }
+        }
+        if (!violations.isEmpty()) {
+            throw new GradleException("Direct fastjson usage is forbidden. Use JsonUtils or ObjectMapper instead:\n" + violations.join('\n'))
+        }
+    }
+}
+
+tasks.register('verifyNoDirectFastjsonDependencies') {
+    group = 'verification'
+    description = 'Fails if a project directly declares Alibaba fastjson dependencies.'
+
+    doLast {
+        def violations = []
+        configurations.each { configuration ->
+            configuration.dependencies.each { dependency ->
+                if (isDirectFastjsonDependency(dependency)) {
+                    violations << "${project.path}:${configuration.name}:${dependency.group}:${dependency.name}:${dependency.version ?: '(managed)'}"
+                }
+            }
+        }
+        if (!violations.isEmpty()) {
+            throw new GradleException("Direct fastjson dependencies are forbidden:\n" + violations.join('\n'))
+        }
+    }
+}
+
+tasks.register('verifyNoResolvedFastjsonRuntimeDependencies') {
+    group = 'verification'
+    description = 'Fails if runtime classpaths resolve Alibaba fastjson artifacts.'
+
+    doLast {
+        def violations = []
+        configurations.matching { configuration ->
+            configuration.canBeResolved &&
+                    (configuration.name == 'runtimeClasspath' || configuration.name.endsWith('RuntimeClasspath'))
+        }.each { configuration ->
+            configuration.incoming.resolutionResult.allComponents.each { component ->
+                def id = component.id
+                if (id instanceof org.gradle.api.artifacts.component.ModuleComponentIdentifier &&
+                        ((id.group == 'com.alibaba' && id.module == 'fastjson') ||
+                                (id.group == 'com.alibaba.fastjson2' && id.module in ['fastjson2', 'fastjson2-extension']))) {
+                    violations << "${project.path}:${configuration.name}:${id.group}:${id.module}:${id.version}"
+                }
+            }
+        }
+        if (!violations.isEmpty()) {
+            throw new GradleException("Resolved fastjson runtime dependencies are forbidden:\n" + violations.join('\n'))
+        }
+    }
+}
+
+tasks.register('agentDependencyAudit') {
+    group = 'verification'
+    description = 'AI Agent dependency guard: no direct fastjson usage, declarations, or resolved runtime artifacts.'
+
+    dependsOn tasks.named('verifyNoFastjsonUsage')
+    dependsOn tasks.named('verifyNoDirectFastjsonDependencies')
+    dependsOn tasks.named('verifyNoResolvedFastjsonRuntimeDependencies')
+}
+
+def excludeFastjson = { configuration ->
+    configuration.exclude group: 'com.alibaba', module: 'fastjson'
+    configuration.exclude group: 'com.alibaba.fastjson2', module: 'fastjson2'
+    configuration.exclude group: 'com.alibaba.fastjson2', module: 'fastjson2-extension'
+}
+
+configurations.matching { it.name.endsWith('RuntimeClasspath') || it.name == 'runtimeClasspath' }.configureEach {
+    excludeFastjson(it)
 }
 
 // ========== Agent-friendly test configuration ==========
@@ -96,6 +195,7 @@ tasks.register('agentQuick') {
     group = 'verification'
     description = 'AI Agent quick gate: compile and run non-integration tests without Docker.'
 
+    dependsOn tasks.named('agentDependencyAudit')
     dependsOn tasks.named('test')
 }
 
