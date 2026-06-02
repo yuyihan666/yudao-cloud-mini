@@ -48,6 +48,13 @@ configurations.configureEach {
 
 // ========== Agent-friendly test configuration ==========
 tasks.withType(Test).configureEach { testTask ->
+    if (JavaVersion.current().majorVersion.toInteger() >= 25) {
+        // Keep agent test logs focused; third-party libraries still use sun.misc.Unsafe on JDK 25.
+        jvmArgs '--sun-misc-unsafe-memory-access=allow'
+        // Mockito/Byte Buddy appends to the bootstrap classpath, which makes CDS emit noisy test warnings.
+        jvmArgs '-Xshare:off'
+    }
+
     testLogging {
         events = [
                 org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,

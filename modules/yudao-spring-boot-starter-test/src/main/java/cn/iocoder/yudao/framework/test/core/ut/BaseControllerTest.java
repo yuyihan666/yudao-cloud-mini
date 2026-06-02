@@ -24,7 +24,7 @@ public abstract class BaseControllerTest {
     protected final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            .setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
 
     protected String toJson(Object value) throws Exception {
         return objectMapper.writeValueAsString(value);

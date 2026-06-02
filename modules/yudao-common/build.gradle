@@ -9,7 +9,7 @@ dependencies {
     compileOnly 'org.aspectj:aspectjweaver'
     compileOnly 'org.springframework:spring-web'
     compileOnly 'jakarta.servlet:jakarta.servlet-api'
-    compileOnly libs.springdoc.openapi
+    compileOnlyApi libs.springdoc.openapi
     compileOnly 'org.springframework.cloud:spring-cloud-openfeign-core'
     compileOnly libs.guava
     compileOnly 'com.fasterxml.jackson.core:jackson-databind'
