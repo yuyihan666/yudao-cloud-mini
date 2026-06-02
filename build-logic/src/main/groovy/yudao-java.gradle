@@ -115,13 +115,20 @@ def excludeFastjson = { configuration ->
     configuration.exclude group: 'com.alibaba.fastjson2', module: 'fastjson2-extension'
 }
 
+// JustAuth AuthUser exposes com.alibaba.fastjson.JSONObject in its public API.
+def fastjsonRuntimeRequiredProjects = [
+        ':modules:yudao-module-system-server',
+        ':modules:yudao-server',
+] as Set
+
 if (providers.gradleProperty('excludeFastjsonForTests').map { it.toBoolean() }.getOrElse(false)) {
     configurations.matching { it.name == 'testRuntimeClasspath' }.configureEach {
         excludeFastjson(it)
     }
 }
 
-if (providers.gradleProperty('excludeFastjsonRuntime').map { it.toBoolean() }.getOrElse(false)) {
+if (providers.gradleProperty('excludeFastjsonRuntime').map { it.toBoolean() }.getOrElse(false) ||
+        !fastjsonRuntimeRequiredProjects.contains(project.path)) {
     configurations.matching { it.name.endsWith('RuntimeClasspath') || it.name == 'runtimeClasspath' }.configureEach {
         excludeFastjson(it)
     }
