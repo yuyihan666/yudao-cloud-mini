@@ -24,8 +24,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.getText;
 import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.parseTree;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.SOCIAL_USER_AUTH_FAILURE;
 import static cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateSupport.cacheState;
 import static cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateSupport.checkCodeAndState;
 
@@ -61,17 +63,23 @@ public class AlipayMiniProgramSocialAuthRequest implements SocialAuthRequest {
     @Override
     public SocialAuthUser login(SocialAuthCallback callback) {
         checkCodeAndState(getSource(), callback, config, stateCache);
+        // 1. 获取 access_token
         Map<String, Object> tokenForm = signedForm("alipay.system.oauth.token", Map.of(
                 "grant_type", "authorization_code",
                 "code", callback.getCode()
         ));
         String tokenJson = httpClient.postForm(GATEWAY_URL, tokenForm);
-        JsonNode tokenInfo = parseTree(tokenJson).path("alipay_system_oauth_token_response");
+        JsonNode tokenRoot = parseTree(tokenJson);
+        JsonNode tokenInfo = tokenRoot.path("alipay_system_oauth_token_response");
+        checkAlipayResponse(tokenRoot, tokenInfo, "alipay_system_oauth_token_response");
         String accessToken = getText(tokenInfo, "access_token");
 
+        // 2. 获取用户信息
         Map<String, Object> userForm = signedForm("alipay.user.info.share", Map.of("auth_token", accessToken));
         String userJson = httpClient.postForm(GATEWAY_URL, userForm);
-        JsonNode userInfo = parseTree(userJson).path("alipay_user_info_share_response");
+        JsonNode userRoot = parseTree(userJson);
+        JsonNode userInfo = userRoot.path("alipay_user_info_share_response");
+        checkAlipayResponse(userRoot, userInfo, "alipay_user_info_share_response");
         return new SocialAuthUser()
                 .setUuid(getText(userInfo, "user_id"))
                 .setNickname(getText(userInfo, "nick_name"))
@@ -79,6 +87,17 @@ public class AlipayMiniProgramSocialAuthRequest implements SocialAuthRequest {
                 .setAccessToken(accessToken)
                 .setRawTokenInfo(tokenJson)
                 .setRawUserInfo(userJson);
+    }
+
+    private void checkAlipayResponse(JsonNode root, JsonNode responseNode, String responseKey) {
+        // 支付宝错误响应在 error_response 节点中
+        JsonNode errorNode = root.path("error_response");
+        if (!errorNode.isMissingNode()) {
+            String subCode = getText(errorNode, "sub_code");
+            String subMsg = getText(errorNode, "sub_msg");
+            throw exception(SOCIAL_USER_AUTH_FAILURE,
+                    subCode != null ? subCode + ": " + subMsg : getText(errorNode, "msg"));
+        }
     }
 
     private Map<String, Object> signedForm(String method, Map<String, ?> bizParams) {

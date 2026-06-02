@@ -22,7 +22,10 @@ public class RedisSocialAuthStateCache implements SocialAuthStateCache {
 
     @Override
     public boolean contains(String state) {
-        return Boolean.TRUE.equals(stringRedisTemplate.hasKey(buildKey(state)));
+        // 使用 GET + DELETE 代替 hasKey，消费 state 令牌防止重放
+        String key = buildKey(state);
+        Boolean deleted = stringRedisTemplate.delete(key);
+        return Boolean.TRUE.equals(deleted);
     }
 
     private String buildKey(String state) {

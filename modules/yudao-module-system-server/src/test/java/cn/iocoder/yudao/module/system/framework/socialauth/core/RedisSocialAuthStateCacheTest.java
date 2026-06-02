@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.ValueOperations;
 
 import java.time.Duration;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -28,13 +29,27 @@ class RedisSocialAuthStateCacheTest {
     }
 
     @Test
-    void containsShouldReadPrefixedState() {
+    void containsShouldConsumeExistingState() {
         StringRedisTemplate redisTemplate = mock(StringRedisTemplate.class);
-        when(redisTemplate.hasKey("social_auth_state:state-1")).thenReturn(true);
+        // delete 返回 true 表示 key 存在并被删除
+        when(redisTemplate.delete("social_auth_state:state-1")).thenReturn(true);
         RedisSocialAuthStateCache stateCache = new RedisSocialAuthStateCache(redisTemplate,
                 "social_auth_state:", Duration.ofMinutes(5));
 
         assertTrue(stateCache.contains("state-1"));
+        // 验证 delete 被调用（消费式检查，防止重放）
+        verify(redisTemplate).delete("social_auth_state:state-1");
+    }
+
+    @Test
+    void containsShouldReturnFalseForMissingState() {
+        StringRedisTemplate redisTemplate = mock(StringRedisTemplate.class);
+        // delete 返回 false 表示 key 不存在
+        when(redisTemplate.delete("social_auth_state:state-unknown")).thenReturn(false);
+        RedisSocialAuthStateCache stateCache = new RedisSocialAuthStateCache(redisTemplate,
+                "social_auth_state:", Duration.ofMinutes(5));
+
+        assertFalse(stateCache.contains("state-unknown"));
     }
 
 }

@@ -12,8 +12,10 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 
+import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.getText;
 import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.parseTree;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.SOCIAL_USER_AUTH_FAILURE;
 import static cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateSupport.cacheState;
 import static cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateSupport.checkCodeAndState;
 
@@ -49,6 +51,7 @@ public abstract class AbstractWechatSocialAuthRequest implements SocialAuthReque
     @Override
     public SocialAuthUser login(SocialAuthCallback callback) {
         checkCodeAndState(getSource(), callback, config, stateCache);
+        // 1. 获取 access_token
         String tokenJson = httpClient.get(TOKEN_URL, Map.of(
                 "appid", config.getClientId(),
                 "secret", config.getClientSecret(),
@@ -56,15 +59,18 @@ public abstract class AbstractWechatSocialAuthRequest implements SocialAuthReque
                 "grant_type", "authorization_code"
         ));
         JsonNode tokenInfo = parseTree(tokenJson);
+        checkResponse(tokenInfo);
         String accessToken = getText(tokenInfo, "access_token");
         String openid = getText(tokenInfo, "openid");
 
+        // 2. 获取用户信息
         String userJson = httpClient.get(USER_INFO_URL, Map.of(
                 "access_token", accessToken,
                 "openid", openid,
                 "lang", "zh_CN"
         ));
         JsonNode userInfo = parseTree(userJson);
+        checkResponse(userInfo);
         return new SocialAuthUser()
                 .setUuid(getText(userInfo, "openid"))
                 .setNickname(getText(userInfo, "nickname"))
@@ -72,6 +78,12 @@ public abstract class AbstractWechatSocialAuthRequest implements SocialAuthReque
                 .setAccessToken(accessToken)
                 .setRawTokenInfo(tokenJson)
                 .setRawUserInfo(userJson);
+    }
+
+    private void checkResponse(JsonNode response) {
+        if (response.has("errcode") && response.path("errcode").asInt() != 0) {
+            throw exception(SOCIAL_USER_AUTH_FAILURE, getText(response, "errmsg"));
+        }
     }
 
 }

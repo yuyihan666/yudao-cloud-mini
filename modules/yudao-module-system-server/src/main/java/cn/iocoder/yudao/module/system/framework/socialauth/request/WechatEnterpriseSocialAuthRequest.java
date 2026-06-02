@@ -78,7 +78,10 @@ public class WechatEnterpriseSocialAuthRequest implements SocialAuthRequest {
                 "access_token", accessToken,
                 "userid", userId
         ));
-        ObjectNode userInfo = (ObjectNode) checkResponse(userInfoJson);
+        JsonNode userInfoNode = checkResponse(userInfoJson);
+        if (!(userInfoNode instanceof ObjectNode userInfo)) {
+            throw exception(SOCIAL_USER_AUTH_FAILURE, getSource() + " user info response is not a JSON object");
+        }
         String userTicket = getText(userTicketInfo, "user_ticket");
         if (StrUtil.isNotBlank(userTicket)) {
             String userDetailJson = httpClient.postJson(USER_DETAIL_URL, Map.of("access_token", accessToken),
