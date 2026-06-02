@@ -266,7 +266,6 @@ public class LocalDateTimeUtils {
                     timeRanges.add(new LocalDateTime[]{startTime, startTime.plusHours(1).minusNanos(1)});
                     startTime = startTime.plusHours(1);
                 }
-                break;
             case DAY:
                 while (startTime.isBefore(endTime)) {
                     timeRanges.add(new LocalDateTime[]{startTime, startTime.plusDays(1).minusNanos(1)});
