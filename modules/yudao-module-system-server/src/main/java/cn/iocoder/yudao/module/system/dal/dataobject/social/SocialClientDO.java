@@ -4,16 +4,16 @@ import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import cn.iocoder.yudao.framework.common.enums.UserTypeEnum;
 import cn.iocoder.yudao.framework.tenant.core.db.TenantBaseDO;
 import cn.iocoder.yudao.module.system.enums.social.SocialTypeEnum;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthClientConfig;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
-import me.zhyd.oauth.config.AuthConfig;
 
 /**
  * 社交客户端 DO
  *
- * 对应 {@link AuthConfig} 配置，满足不同租户，有自己的客户端配置，实现社交（三方）登录
+ * 对应 {@link SocialAuthClientConfig} 配置，满足不同租户，有自己的客户端配置，实现社交（三方）登录
  *
  * @author 芋道源码
  */

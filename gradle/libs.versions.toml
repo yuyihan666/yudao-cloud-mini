@@ -47,11 +47,7 @@ reflections = "0.10.2"
 # 三方云
 captcha = "1.4.0"
 httpclient = "4.5.14"
-justauth = "1.16.7"
-justauth-starter = "1.4.0"
 weixin-java = "4.8.2-20260501.180637"
-bouncycastle = "1.84"
-alipay-sdk = "4.40.806.ALL"
 awssdk = "2.44.0"
 velocity = "2.4.1"
 tika = "3.3.0"
@@ -118,8 +114,6 @@ httpclient = { module = "org.apache.httpcomponents:httpclient", version.ref = "h
 ttl = { module = "com.alibaba:transmittable-thread-local", version.ref = "ttl" }
 # 三方云
 captcha = { module = "com.anji-plus:captcha-spring-boot-starter", version.ref = "captcha" }
-justauth = { module = "me.zhyd.oauth:JustAuth", version.ref = "justauth" }
-justauth-starter = { module = "com.xkcoding.justauth:justauth-spring-boot-starter", version.ref = "justauth-starter" }
 weixin-pay = { module = "com.github.binarywang:weixin-java-pay", version.ref = "weixin-java" }
 weixin-mp = { module = "com.github.binarywang:wx-java-mp-spring-boot-starter", version.ref = "weixin-java" }
 weixin-miniapp = { module = "com.github.binarywang:wx-java-miniapp-spring-boot-starter", version.ref = "weixin-java" }

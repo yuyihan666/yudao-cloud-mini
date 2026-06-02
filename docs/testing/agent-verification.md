@@ -40,7 +40,7 @@ Use the HTML report for human debugging and XML results for machine parsing.
 
 ## Dependency Reduction
 
-Fastjson is excluded from runtime classpaths by default except for modules that still need JustAuth social login compatibility.
+Fastjson is excluded from runtime and test runtime classpaths by default.
 
 Run the dependency guard:
 
@@ -48,19 +48,20 @@ Run the dependency guard:
 ./gradlew :modules:yudao-module-system-server:agentDependencyAudit
 ```
 
-Force test runtime without fastjson when investigating remaining blockers:
+Run the full system-server agent verification when touching the social-auth or JSON boundary:
 
 ```bash
-./gradlew :modules:yudao-module-system-server:agentVerify -PexcludeFastjsonForTests=true --rerun-tasks
+./gradlew :modules:yudao-module-system-server:agentVerify --rerun-tasks
 ```
 
-Force production runtime without fastjson, including known exception modules:
+Build production jars and scan them for removed JSON/auth libraries:
 
 ```bash
-./gradlew :modules:yudao-server:bootJar :modules:yudao-gateway:bootJar :modules:yudao-module-system-server:bootJar :modules:yudao-module-infra-server:bootJar -PexcludeFastjsonRuntime=true
+./gradlew :modules:yudao-server:bootJar :modules:yudao-gateway:bootJar :modules:yudao-module-system-server:bootJar :modules:yudao-module-infra-server:bootJar
+for jar in modules/yudao-server/build/libs/yudao-server.jar modules/yudao-gateway/build/libs/yudao-gateway.jar modules/yudao-module-system-server/build/libs/yudao-module-system-server.jar modules/yudao-module-infra-server/build/libs/yudao-module-infra-server.jar; do
+  jar tf "$jar" | rg "BOOT-INF/lib/(fastjson|fastjson2|JustAuth|justauth)" || true
+done
 ```
-
-Do not remove the JustAuth exceptions until `docs/dependencies/fastjson2-removal-progress.md` records passing evidence for social login and `agentVerify`.
 
 ## Rules For Agents
 

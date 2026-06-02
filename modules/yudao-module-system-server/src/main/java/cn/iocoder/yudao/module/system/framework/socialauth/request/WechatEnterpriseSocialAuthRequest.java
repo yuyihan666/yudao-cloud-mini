@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -105,9 +104,7 @@ public class WechatEnterpriseSocialAuthRequest implements SocialAuthRequest {
     }
 
     private static void mergeUserDetail(ObjectNode userInfo, JsonNode userDetail) {
-        Iterator<Map.Entry<String, JsonNode>> fields = userDetail.fields();
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> field = fields.next();
+        for (Map.Entry<String, JsonNode> field : userDetail.properties()) {
             if (!"errcode".equals(field.getKey()) && !"errmsg".equals(field.getKey())) {
                 userInfo.set(field.getKey(), field.getValue());
             }
