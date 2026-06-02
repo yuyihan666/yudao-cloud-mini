@@ -31,6 +31,8 @@ dependencies {
     annotationProcessor libs.mapstruct.processor
 
     compileOnly 'org.projectlombok:lombok'
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
     implementation libs.mapstruct
 
     // JUnit Platform launcher required for test execution
