@@ -1,6 +1,6 @@
 package cn.iocoder.yudao.module.system.framework.socialauth.config;
 
-import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequest;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequestBuilder;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequestFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -22,10 +22,11 @@ public class YudaoSocialAuthConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "justauth", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public SocialAuthRequestFactory socialAuthRequestFactory(List<SocialAuthRequest> requests) {
-        Map<String, SocialAuthRequest> requestMap = requests.stream()
+    public SocialAuthRequestFactory socialAuthRequestFactory(List<SocialAuthRequestBuilder> requestBuilders,
+                                                             SocialAuthProperties properties) {
+        Map<String, SocialAuthRequestBuilder> requestBuilderMap = requestBuilders.stream()
                 .collect(Collectors.toMap(request -> request.getSource().toUpperCase(Locale.ROOT), Function.identity()));
-        return new SocialAuthRequestFactory(requestMap);
+        return new SocialAuthRequestFactory(requestBuilderMap, SocialAuthRequestFactory.normalizeConfigs(properties.getType()));
     }
 
 }
