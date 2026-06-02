@@ -21,7 +21,7 @@ Remove these artifacts from all production and test runtime classpaths:
 | Phase | Status | Evidence |
 |---|---|---|
 | Source fastjson usage removed | Complete | No direct `com.alibaba.fastjson*` imports found |
-| Direct Gradle fastjson declarations removed | Pending | `gradle/libs.versions.toml` still has unused `fastjson` version |
+| Direct Gradle fastjson declarations removed | Complete | `gradle/libs.versions.toml` no longer declares `fastjson`; `rg` finds no build references |
 | Test runtime exclusion experiment | Pending | Not run yet |
 | Production runtime exclusion experiment | Pending | Not run yet |
 | Default runtime exclusion | Pending | Not implemented yet |
