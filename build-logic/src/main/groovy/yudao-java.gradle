@@ -101,12 +101,38 @@ tasks.register('verifyNoDirectFastjsonDependencies') {
     }
 }
 
+tasks.register('verifyNoResolvedFastjsonRuntimeDependencies') {
+    group = 'verification'
+    description = 'Fails if runtime classpaths resolve Alibaba fastjson artifacts.'
+
+    doLast {
+        def violations = []
+        configurations.matching { configuration ->
+            configuration.canBeResolved &&
+                    (configuration.name == 'runtimeClasspath' || configuration.name.endsWith('RuntimeClasspath'))
+        }.each { configuration ->
+            configuration.incoming.resolutionResult.allComponents.each { component ->
+                def id = component.id
+                if (id instanceof org.gradle.api.artifacts.component.ModuleComponentIdentifier &&
+                        ((id.group == 'com.alibaba' && id.module == 'fastjson') ||
+                                (id.group == 'com.alibaba.fastjson2' && id.module in ['fastjson2', 'fastjson2-extension']))) {
+                    violations << "${project.path}:${configuration.name}:${id.group}:${id.module}:${id.version}"
+                }
+            }
+        }
+        if (!violations.isEmpty()) {
+            throw new GradleException("Resolved fastjson runtime dependencies are forbidden:\n" + violations.join('\n'))
+        }
+    }
+}
+
 tasks.register('agentDependencyAudit') {
     group = 'verification'
-    description = 'AI Agent dependency guard: no direct fastjson source usage or direct fastjson dependency declarations.'
+    description = 'AI Agent dependency guard: no direct fastjson usage, declarations, or resolved runtime artifacts.'
 
     dependsOn tasks.named('verifyNoFastjsonUsage')
     dependsOn tasks.named('verifyNoDirectFastjsonDependencies')
+    dependsOn tasks.named('verifyNoResolvedFastjsonRuntimeDependencies')
 }
 
 def excludeFastjson = { configuration ->
