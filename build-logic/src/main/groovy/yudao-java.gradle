@@ -46,6 +46,67 @@ configurations.configureEach {
     }
 }
 
+// ========== JSON dependency guardrails ==========
+def isDirectFastjsonDependency = { dep ->
+    (dep.group == 'com.alibaba' && dep.name == 'fastjson') ||
+            (dep.group == 'com.alibaba.fastjson2' && dep.name in ['fastjson2', 'fastjson2-extension'])
+}
+
+tasks.register('verifyNoFastjsonUsage') {
+    group = 'verification'
+    description = 'Fails if first-party source imports Alibaba fastjson APIs.'
+
+    doLast {
+        def sourceFiles = fileTree(project.projectDir) {
+            include 'src/main/java/**/*.java'
+            include 'src/test/java/**/*.java'
+            exclude '**/build/**'
+        }
+        def violations = []
+        sourceFiles.files.each { sourceFile ->
+            sourceFile.eachLine { line, number ->
+                def trimmed = line.trim()
+                if (trimmed.startsWith('import com.alibaba.fastjson.') ||
+                        trimmed == 'import com.alibaba.fastjson;' ||
+                        trimmed.startsWith('import com.alibaba.fastjson2.') ||
+                        trimmed == 'import com.alibaba.fastjson2;') {
+                    violations << "${project.path}:${project.relativePath(sourceFile)}:${number}: ${trimmed}"
+                }
+            }
+        }
+        if (!violations.isEmpty()) {
+            throw new GradleException("Direct fastjson usage is forbidden. Use JsonUtils or ObjectMapper instead:\n" + violations.join('\n'))
+        }
+    }
+}
+
+tasks.register('verifyNoDirectFastjsonDependencies') {
+    group = 'verification'
+    description = 'Fails if a project directly declares Alibaba fastjson dependencies.'
+
+    doLast {
+        def violations = []
+        configurations.each { configuration ->
+            configuration.dependencies.each { dependency ->
+                if (isDirectFastjsonDependency(dependency)) {
+                    violations << "${project.path}:${configuration.name}:${dependency.group}:${dependency.name}:${dependency.version ?: '(managed)'}"
+                }
+            }
+        }
+        if (!violations.isEmpty()) {
+            throw new GradleException("Direct fastjson dependencies are forbidden:\n" + violations.join('\n'))
+        }
+    }
+}
+
+tasks.register('agentDependencyAudit') {
+    group = 'verification'
+    description = 'AI Agent dependency guard: no direct fastjson source usage or direct fastjson dependency declarations.'
+
+    dependsOn tasks.named('verifyNoFastjsonUsage')
+    dependsOn tasks.named('verifyNoDirectFastjsonDependencies')
+}
+
 // ========== Agent-friendly test configuration ==========
 tasks.withType(Test).configureEach { testTask ->
     if (JavaVersion.current().majorVersion.toInteger() >= 25) {
@@ -96,6 +157,7 @@ tasks.register('agentQuick') {
     group = 'verification'
     description = 'AI Agent quick gate: compile and run non-integration tests without Docker.'
 
+    dependsOn tasks.named('agentDependencyAudit')
     dependsOn tasks.named('test')
 }
 
