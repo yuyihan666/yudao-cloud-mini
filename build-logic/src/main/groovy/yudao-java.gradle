@@ -107,6 +107,24 @@ tasks.register('agentDependencyAudit') {
     dependsOn tasks.named('verifyNoDirectFastjsonDependencies')
 }
 
+def excludeFastjson = { configuration ->
+    configuration.exclude group: 'com.alibaba', module: 'fastjson'
+    configuration.exclude group: 'com.alibaba.fastjson2', module: 'fastjson2'
+    configuration.exclude group: 'com.alibaba.fastjson2', module: 'fastjson2-extension'
+}
+
+if (providers.gradleProperty('excludeFastjsonForTests').map { it.toBoolean() }.getOrElse(false)) {
+    configurations.matching { it.name == 'testRuntimeClasspath' }.configureEach {
+        excludeFastjson(it)
+    }
+}
+
+if (providers.gradleProperty('excludeFastjsonRuntime').map { it.toBoolean() }.getOrElse(false)) {
+    configurations.matching { it.name.endsWith('RuntimeClasspath') || it.name == 'runtimeClasspath' }.configureEach {
+        excludeFastjson(it)
+    }
+}
+
 // ========== Agent-friendly test configuration ==========
 tasks.withType(Test).configureEach { testTask ->
     if (JavaVersion.current().majorVersion.toInteger() >= 25) {

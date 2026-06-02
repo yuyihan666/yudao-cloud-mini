@@ -38,6 +38,24 @@ Each test task prints:
 
 Use the HTML report for human debugging and XML results for machine parsing.
 
+## Dependency Reduction Experiments
+
+Fastjson removal experiments are opt-in until the production runtime classpath is proven safe.
+
+Run test runtime without fastjson:
+
+```bash
+./gradlew :modules:yudao-module-system-server:agentVerify -PexcludeFastjsonForTests=true --rerun-tasks
+```
+
+Run production runtime classpath checks without fastjson:
+
+```bash
+./gradlew :modules:yudao-server:bootJar :modules:yudao-gateway:bootJar :modules:yudao-module-system-server:bootJar :modules:yudao-module-infra-server:bootJar -PexcludeFastjsonRuntime=true
+```
+
+Do not make `excludeFastjsonRuntime` the default until `docs/dependencies/fastjson2-removal-progress.md` records passing evidence for JustAuth, Easy-Trans, Nacos-backed apps, and `agentVerify`.
+
 ## Rules For Agents
 
 - Do not claim success without a passing command and the gate name.
