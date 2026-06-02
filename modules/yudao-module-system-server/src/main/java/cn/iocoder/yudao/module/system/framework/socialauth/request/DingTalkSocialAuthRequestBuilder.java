@@ -10,23 +10,23 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- * Gitee 授权请求构建器。
+ * 钉钉授权请求构建器。
  */
 @Component
 @RequiredArgsConstructor
-public class GiteeSocialAuthRequestBuilder implements SocialAuthRequestBuilder {
+public class DingTalkSocialAuthRequestBuilder implements SocialAuthRequestBuilder {
 
     private final SocialAuthHttpClient httpClient;
     private final SocialAuthStateCache stateCache;
 
     @Override
     public String getSource() {
-        return SocialTypeEnum.GITEE.getSource();
+        return SocialTypeEnum.DINGTALK.getSource();
     }
 
     @Override
     public SocialAuthRequest build(SocialAuthClientConfig config) {
-        return new GiteeSocialAuthRequest(config, httpClient, stateCache);
+        return new DingTalkSocialAuthRequest(config, httpClient, stateCache);
     }
 
 }

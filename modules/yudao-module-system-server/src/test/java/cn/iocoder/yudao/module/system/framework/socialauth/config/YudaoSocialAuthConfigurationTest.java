@@ -4,15 +4,18 @@ import cn.iocoder.yudao.module.system.framework.socialauth.core.*;
 import cn.iocoder.yudao.module.system.service.social.dto.SocialAuthUser;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 class YudaoSocialAuthConfigurationTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withUserConfiguration(YudaoSocialAuthConfiguration.class)
+            .withBean(StringRedisTemplate.class, () -> mock(StringRedisTemplate.class))
             .withBean(SocialAuthRequestBuilder.class, FixedSocialAuthRequestBuilder::new);
 
     @Test
@@ -21,6 +24,7 @@ class YudaoSocialAuthConfigurationTest {
                 .withPropertyValues("justauth.type.GITEE.client-id=client-id")
                 .run(context -> {
                     assertInstanceOf(DefaultSocialAuthHttpClient.class, context.getBean(SocialAuthHttpClient.class));
+                    assertInstanceOf(RedisSocialAuthStateCache.class, context.getBean(SocialAuthStateCache.class));
                     SocialAuthRequestFactory factory = context.getBean(SocialAuthRequestFactory.class);
 
                     FixedSocialAuthRequest request = (FixedSocialAuthRequest) factory.get("GITEE");

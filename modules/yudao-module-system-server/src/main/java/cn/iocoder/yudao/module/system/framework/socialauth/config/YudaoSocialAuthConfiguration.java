@@ -1,13 +1,16 @@
 package cn.iocoder.yudao.module.system.framework.socialauth.config;
 
 import cn.iocoder.yudao.module.system.framework.socialauth.core.DefaultSocialAuthHttpClient;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.RedisSocialAuthStateCache;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthHttpClient;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequestBuilder;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequestFactory;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateCache;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.List;
 import java.util.Locale;
@@ -25,6 +28,13 @@ public class YudaoSocialAuthConfiguration {
     @Bean
     public SocialAuthHttpClient socialAuthHttpClient() {
         return new DefaultSocialAuthHttpClient();
+    }
+
+    @Bean
+    public SocialAuthStateCache socialAuthStateCache(StringRedisTemplate stringRedisTemplate,
+                                                     SocialAuthProperties properties) {
+        return new RedisSocialAuthStateCache(stringRedisTemplate,
+                properties.getCache().getPrefix(), properties.getCache().getTimeout());
     }
 
     @Bean

@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.system.enums.social.SocialTypeEnum;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthClientConfig;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthHttpClient;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequest;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateCache;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,14 +15,16 @@ class WechatOpenSocialAuthRequestBuilderTest {
 
     @Test
     void getSourceShouldReturnWechatOpenSource() {
-        WechatOpenSocialAuthRequestBuilder builder = new WechatOpenSocialAuthRequestBuilder(mock(SocialAuthHttpClient.class));
+        WechatOpenSocialAuthRequestBuilder builder = new WechatOpenSocialAuthRequestBuilder(mock(SocialAuthHttpClient.class),
+                mock(SocialAuthStateCache.class));
 
         assertEquals(SocialTypeEnum.WECHAT_OPEN.getSource(), builder.getSource());
     }
 
     @Test
     void buildShouldCreateWechatOpenRequest() {
-        WechatOpenSocialAuthRequestBuilder builder = new WechatOpenSocialAuthRequestBuilder(mock(SocialAuthHttpClient.class));
+        WechatOpenSocialAuthRequestBuilder builder = new WechatOpenSocialAuthRequestBuilder(mock(SocialAuthHttpClient.class),
+                mock(SocialAuthStateCache.class));
 
         SocialAuthRequest request = builder.build(new SocialAuthClientConfig());
 

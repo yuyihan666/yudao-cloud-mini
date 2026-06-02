@@ -14,6 +14,7 @@ import static cn.iocoder.yudao.framework.common.util.http.HttpUtils.encodeUtf8;
 public class DefaultSocialAuthHttpClient implements SocialAuthHttpClient {
 
     private static final String FORM_CONTENT_TYPE = "application/x-www-form-urlencoded;charset=UTF-8";
+    private static final String JSON_CONTENT_TYPE = "application/json;charset=UTF-8";
 
     @Override
     public String get(String url, Map<String, ?> query) {
@@ -27,6 +28,16 @@ public class DefaultSocialAuthHttpClient implements SocialAuthHttpClient {
         try (HttpResponse response = HttpRequest.post(url)
                 .contentType(FORM_CONTENT_TYPE)
                 .body(toFormBody(form))
+                .execute()) {
+            return response.body();
+        }
+    }
+
+    @Override
+    public String postJson(String url, Map<String, ?> query, String body) {
+        try (HttpResponse response = HttpRequest.post(appendQuery(url, query))
+                .contentType(JSON_CONTENT_TYPE)
+                .body(body)
                 .execute()) {
             return response.body();
         }

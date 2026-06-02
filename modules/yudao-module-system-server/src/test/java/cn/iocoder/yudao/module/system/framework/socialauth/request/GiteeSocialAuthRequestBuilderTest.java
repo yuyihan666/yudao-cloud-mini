@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.system.enums.social.SocialTypeEnum;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthClientConfig;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthHttpClient;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequest;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateCache;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,14 +15,16 @@ class GiteeSocialAuthRequestBuilderTest {
 
     @Test
     void getSourceShouldReturnGiteeSource() {
-        GiteeSocialAuthRequestBuilder builder = new GiteeSocialAuthRequestBuilder(mock(SocialAuthHttpClient.class));
+        GiteeSocialAuthRequestBuilder builder = new GiteeSocialAuthRequestBuilder(mock(SocialAuthHttpClient.class),
+                mock(SocialAuthStateCache.class));
 
         assertEquals(SocialTypeEnum.GITEE.getSource(), builder.getSource());
     }
 
     @Test
     void buildShouldCreateGiteeRequestWithConfig() {
-        GiteeSocialAuthRequestBuilder builder = new GiteeSocialAuthRequestBuilder(mock(SocialAuthHttpClient.class));
+        GiteeSocialAuthRequestBuilder builder = new GiteeSocialAuthRequestBuilder(mock(SocialAuthHttpClient.class),
+                mock(SocialAuthStateCache.class));
         SocialAuthClientConfig config = new SocialAuthClientConfig()
                 .setClientId("client-id")
                 .setClientSecret("client-secret")

@@ -74,6 +74,24 @@ class DefaultSocialAuthHttpClientTest {
         assertEquals("post-ok", response);
     }
 
+    @Test
+    void postJsonShouldSendEncodedQueryParametersAndJsonBody() {
+        server.createContext("/json", exchange -> {
+            assertEquals("POST", exchange.getRequestMethod());
+            assertEquals("application/json;charset=UTF-8", exchange.getRequestHeaders().getFirst("Content-Type"));
+            Map<String, String> query = parseQuery(exchange.getRequestURI().getRawQuery());
+            assertEquals("土豆", query.get("name"));
+            String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            assertEquals("{\"code\":\"code-1\"}", body);
+            writeResponse(exchange, "json-ok");
+        });
+        DefaultSocialAuthHttpClient client = new DefaultSocialAuthHttpClient();
+
+        String response = client.postJson(baseUrl + "/json", Map.of("name", "土豆"), "{\"code\":\"code-1\"}");
+
+        assertEquals("json-ok", response);
+    }
+
     private static Map<String, String> parseQuery(String query) {
         return Arrays.stream(query.split("&"))
                 .map(part -> part.split("=", 2))

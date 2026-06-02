@@ -7,6 +7,7 @@ import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthCallba
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthClientConfig;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthHttpClient;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequest;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateCache;
 import cn.iocoder.yudao.module.system.service.social.dto.SocialAuthUser;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import java.util.Map;
 
 import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.getText;
 import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.parseTree;
+import static cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateSupport.cacheState;
+import static cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateSupport.checkCodeAndState;
 
 /**
  * Gitee 授权请求。
@@ -29,6 +32,7 @@ public class GiteeSocialAuthRequest implements SocialAuthRequest {
 
     private final SocialAuthClientConfig config;
     private final SocialAuthHttpClient httpClient;
+    private final SocialAuthStateCache stateCache;
 
     @Override
     public String getSource() {
@@ -37,15 +41,17 @@ public class GiteeSocialAuthRequest implements SocialAuthRequest {
 
     @Override
     public String authorize(String state) {
+        String realState = cacheState(state, stateCache);
         return AUTHORIZE_URL
                 + "?response_type=code"
                 + "&client_id=" + HttpUtils.encodeUtf8(config.getClientId())
                 + "&redirect_uri=" + HttpUtils.encodeUtf8(config.getRedirectUri())
-                + "&state=" + HttpUtils.encodeUtf8(state);
+                + "&state=" + HttpUtils.encodeUtf8(realState);
     }
 
     @Override
     public SocialAuthUser login(SocialAuthCallback callback) {
+        checkCodeAndState(getSource(), callback, config, stateCache);
         Map<String, Object> tokenForm = new LinkedHashMap<>();
         tokenForm.put("grant_type", "authorization_code");
         tokenForm.put("code", callback.getCode());

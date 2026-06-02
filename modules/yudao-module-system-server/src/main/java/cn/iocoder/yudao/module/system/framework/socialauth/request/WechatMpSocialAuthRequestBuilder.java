@@ -5,6 +5,7 @@ import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthClient
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthHttpClient;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequest;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequestBuilder;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 public class WechatMpSocialAuthRequestBuilder implements SocialAuthRequestBuilder {
 
     private final SocialAuthHttpClient httpClient;
+    private final SocialAuthStateCache stateCache;
 
     @Override
     public String getSource() {
@@ -24,7 +26,7 @@ public class WechatMpSocialAuthRequestBuilder implements SocialAuthRequestBuilde
 
     @Override
     public SocialAuthRequest build(SocialAuthClientConfig config) {
-        return new WechatMpSocialAuthRequest(config, httpClient);
+        return new WechatMpSocialAuthRequest(config, httpClient, stateCache);
     }
 
 }

@@ -11,24 +11,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
 
-class WechatMpSocialAuthRequestBuilderTest {
+class DingTalkSocialAuthRequestBuilderTest {
 
     @Test
-    void getSourceShouldReturnWechatMpSource() {
-        WechatMpSocialAuthRequestBuilder builder = new WechatMpSocialAuthRequestBuilder(mock(SocialAuthHttpClient.class),
-                mock(SocialAuthStateCache.class));
+    void getSourceShouldReturnDingTalkSource() {
+        DingTalkSocialAuthRequestBuilder builder = new DingTalkSocialAuthRequestBuilder(
+                mock(SocialAuthHttpClient.class), mock(SocialAuthStateCache.class));
 
-        assertEquals(SocialTypeEnum.WECHAT_MP.getSource(), builder.getSource());
+        assertEquals(SocialTypeEnum.DINGTALK.getSource(), builder.getSource());
     }
 
     @Test
-    void buildShouldCreateWechatMpRequest() {
-        WechatMpSocialAuthRequestBuilder builder = new WechatMpSocialAuthRequestBuilder(mock(SocialAuthHttpClient.class),
-                mock(SocialAuthStateCache.class));
+    void buildShouldCreateDingTalkRequest() {
+        DingTalkSocialAuthRequestBuilder builder = new DingTalkSocialAuthRequestBuilder(
+                mock(SocialAuthHttpClient.class), mock(SocialAuthStateCache.class));
 
         SocialAuthRequest request = builder.build(new SocialAuthClientConfig());
 
-        assertInstanceOf(WechatMpSocialAuthRequest.class, request);
+        assertInstanceOf(DingTalkSocialAuthRequest.class, request);
     }
 
 }

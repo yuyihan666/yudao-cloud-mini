@@ -11,4 +11,6 @@ public interface SocialAuthHttpClient {
 
     String postForm(String url, Map<String, ?> form);
 
+    String postJson(String url, Map<String, ?> query, String body);
+
 }

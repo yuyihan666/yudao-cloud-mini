@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.system.enums.social.SocialTypeEnum;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthCallback;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthClientConfig;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthHttpClient;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateCache;
 import cn.iocoder.yudao.module.system.service.social.dto.SocialAuthUser;
 import org.junit.jupiter.api.Test;
 
@@ -15,13 +16,14 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.when;
 
 class GiteeSocialAuthRequestTest {
 
     @Test
     void getSourceShouldReturnGiteeSource() {
         GiteeSocialAuthRequest request = new GiteeSocialAuthRequest(newSocialAuthClientConfig(),
-                mock(SocialAuthHttpClient.class));
+                mock(SocialAuthHttpClient.class), mock(SocialAuthStateCache.class));
 
         assertEquals(SocialTypeEnum.GITEE.getSource(), request.getSource());
     }
@@ -29,7 +31,7 @@ class GiteeSocialAuthRequestTest {
     @Test
     void authorizeShouldBuildAuthorizeUrl() {
         GiteeSocialAuthRequest request = new GiteeSocialAuthRequest(newSocialAuthClientConfig(),
-                mock(SocialAuthHttpClient.class));
+                mock(SocialAuthHttpClient.class), mock(SocialAuthStateCache.class));
 
         String authorizeUrl = request.authorize("state-1");
 
@@ -43,6 +45,8 @@ class GiteeSocialAuthRequestTest {
     @Test
     void loginShouldMapTokenAndUserInfoToSocialAuthUser() {
         SocialAuthHttpClient httpClient = mock(SocialAuthHttpClient.class);
+        SocialAuthStateCache stateCache = mock(SocialAuthStateCache.class);
+        when(stateCache.contains("state-1")).thenReturn(true);
         String tokenJson = "{\"access_token\":\"access-token-1\"}";
         when(httpClient.postForm(eq("https://gitee.com/oauth/token"), argThat(form -> {
             assertEquals("authorization_code", form.get("grant_type"));
@@ -57,7 +61,8 @@ class GiteeSocialAuthRequestTest {
             assertEquals("access-token-1", query.get("access_token"));
             return true;
         }))).thenReturn(userJson);
-        GiteeSocialAuthRequest request = new GiteeSocialAuthRequest(newSocialAuthClientConfig(), httpClient);
+        GiteeSocialAuthRequest request = new GiteeSocialAuthRequest(newSocialAuthClientConfig(), httpClient,
+                stateCache);
         SocialAuthCallback callback = new SocialAuthCallback().setCode("code-1").setState("state-1");
 
         SocialAuthUser authUser = request.login(callback);

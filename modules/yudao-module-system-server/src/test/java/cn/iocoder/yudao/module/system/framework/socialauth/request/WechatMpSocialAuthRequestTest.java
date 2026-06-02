@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.system.enums.social.SocialTypeEnum;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthCallback;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthClientConfig;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthHttpClient;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateCache;
 import cn.iocoder.yudao.module.system.service.social.dto.SocialAuthUser;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +20,7 @@ class WechatMpSocialAuthRequestTest {
     @Test
     void getSourceShouldReturnWechatMpSource() {
         WechatMpSocialAuthRequest request = new WechatMpSocialAuthRequest(newSocialAuthClientConfig(),
-                mock(SocialAuthHttpClient.class));
+                mock(SocialAuthHttpClient.class), mock(SocialAuthStateCache.class));
 
         assertEquals(SocialTypeEnum.WECHAT_MP.getSource(), request.getSource());
     }
@@ -27,7 +28,7 @@ class WechatMpSocialAuthRequestTest {
     @Test
     void authorizeShouldBuildWechatMpAuthorizeUrl() {
         WechatMpSocialAuthRequest request = new WechatMpSocialAuthRequest(newSocialAuthClientConfig(),
-                mock(SocialAuthHttpClient.class));
+                mock(SocialAuthHttpClient.class), mock(SocialAuthStateCache.class));
 
         String authorizeUrl = request.authorize("state-1");
 
@@ -43,6 +44,8 @@ class WechatMpSocialAuthRequestTest {
     @Test
     void loginShouldMapWechatUserInfoToSocialAuthUser() {
         SocialAuthHttpClient httpClient = mock(SocialAuthHttpClient.class);
+        SocialAuthStateCache stateCache = mock(SocialAuthStateCache.class);
+        when(stateCache.contains("state-1")).thenReturn(true);
         String tokenJson = "{\"access_token\":\"access-token-1\",\"openid\":\"openid-1\"}";
         when(httpClient.get(eq("https://api.weixin.qq.com/sns/oauth2/access_token"), argThat(query -> {
             assertEquals("client-id", query.get("appid"));
@@ -58,7 +61,8 @@ class WechatMpSocialAuthRequestTest {
             assertEquals("zh_CN", query.get("lang"));
             return true;
         }))).thenReturn(userJson);
-        WechatMpSocialAuthRequest request = new WechatMpSocialAuthRequest(newSocialAuthClientConfig(), httpClient);
+        WechatMpSocialAuthRequest request = new WechatMpSocialAuthRequest(newSocialAuthClientConfig(), httpClient,
+                stateCache);
 
         SocialAuthUser authUser = request.login(new SocialAuthCallback().setCode("code-1").setState("state-1"));
 

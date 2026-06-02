@@ -5,6 +5,7 @@ import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthCallba
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthClientConfig;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthHttpClient;
 import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthRequest;
+import cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateCache;
 import cn.iocoder.yudao.module.system.service.social.dto.SocialAuthUser;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,8 @@ import java.util.Map;
 
 import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.getText;
 import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.parseTree;
+import static cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateSupport.cacheState;
+import static cn.iocoder.yudao.module.system.framework.socialauth.core.SocialAuthStateSupport.checkCodeAndState;
 
 /**
  * 微信 OAuth2 授权请求基类。
@@ -25,6 +28,7 @@ public abstract class AbstractWechatSocialAuthRequest implements SocialAuthReque
 
     private final SocialAuthClientConfig config;
     private final SocialAuthHttpClient httpClient;
+    private final SocialAuthStateCache stateCache;
 
     protected abstract String getAuthorizeUrl();
 
@@ -32,17 +36,19 @@ public abstract class AbstractWechatSocialAuthRequest implements SocialAuthReque
 
     @Override
     public String authorize(String state) {
+        String realState = cacheState(state, stateCache);
         return getAuthorizeUrl()
                 + "?appid=" + HttpUtils.encodeUtf8(config.getClientId())
                 + "&redirect_uri=" + HttpUtils.encodeUtf8(config.getRedirectUri())
                 + "&response_type=code"
                 + "&scope=" + HttpUtils.encodeUtf8(getAuthorizeScope())
-                + "&state=" + HttpUtils.encodeUtf8(state)
+                + "&state=" + HttpUtils.encodeUtf8(realState)
                 + "#wechat_redirect";
     }
 
     @Override
     public SocialAuthUser login(SocialAuthCallback callback) {
+        checkCodeAndState(getSource(), callback, config, stateCache);
         String tokenJson = httpClient.get(TOKEN_URL, Map.of(
                 "appid", config.getClientId(),
                 "secret", config.getClientSecret(),
