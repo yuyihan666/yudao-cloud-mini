@@ -56,7 +56,7 @@ docker compose -f docker-compose.local.yaml up -d
 ```
 首次启动会自动执行 `sql/mysql/ruoyi-vue-pro.sql` 和 `sql/mysql/quartz.sql` 初始化数据库。
 
-**微服务模式**：分别启动 `GatewayServerApplication`、`SystemServerApplication`（48081）、`InfraServerApplication`（48082），依赖 Nacos。
+**微服务模式**：分别启动 `GatewayServerApplication`（48080）、`SystemServerApplication`（48081）、`InfraServerApplication`（48082），依赖 Nacos。
 
 ## Architecture
 
@@ -77,12 +77,15 @@ modules/yudao-common            基础 POJO、枚举、工具类
 modules/yudao-spring-boot-starter-*   16 个自定义 Spring Boot Starter
   ├── starter-mybatis           MyBatis-Plus 封装
   ├── starter-security          认证鉴权
+  ├── starter-web               Web 层（Spring MVC + 全局异常处理）
   ├── starter-rpc               OpenFeign + LoadBalancer
   ├── starter-redis             Redisson 封装
   ├── starter-mq                消息队列抽象（Redis/RocketMQ/RabbitMQ/Kafka）
+  ├── starter-excel             FastExcel 导入导出
+  ├── starter-protection        限流、幂等、分布式锁（Lock4j）
   ├── starter-biz-tenant        SaaS 多租户
   ├── starter-biz-data-permission  数据权限
-  └── ...其他 starter
+  └── ...其他 starter（env/job/monitor/websocket/biz-ip/test）
        │
 modules/yudao-module-*-api      Feign 接口 + DTO，供跨模块调用
 modules/yudao-module-*-server   业务实现，依赖 api + framework starters
@@ -197,8 +200,10 @@ JSON 操作统一使用 `JsonUtils`（基于 Jackson ObjectMapper）。
 
 - **Java 25** + **Spring Boot 3.5.14** + **Spring Cloud 2025.0.1** + **Spring Cloud Alibaba 2025.0.0.0**
 - **MyBatis-Plus 3.5.16** + MyBatis-Plus Join 1.5.7（yulichang）
-- **Druid** 连接池 + dynamic-datasource（多数据源）
+- **Druid** 连接池 + dynamic-datasource 4.5.0（多数据源）
 - **Redisson** 4.4.0
+- **Easy-Trans** 3.0.6（字段翻译）
+- **XXL-Job** 2.4.0（分布式任务调度）
 - **Nacos** 注册中心 + 配置中心
 - **MapStruct** 1.6.3 + **Lombok** 1.18.46
 - **Knife4j** 4.5.0（Swagger/OpenAPI v3 聚合）
